@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Wareed BI Report</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<style>
+:root{--p:#5c1d66;--p2:#3e174b;--n:#174b6c;--n2:#1d3c67;--g:#159a6b;--c:#20aec5;--y:#edbd00;--r:#b52b24;--ink:#172431;--muted:#6f7c88;--bg:#f1f4f8;--card:#fff;--line:#dce4ea}
+*{box-sizing:border-box}html{scroll-behavior:smooth;max-width:100%;min-height:100%;overflow-x:hidden;overflow-y:auto}body{width:100%;max-width:100%;min-height:100dvh;margin:0;background:var(--bg);color:var(--ink);font-family:Tahoma,Arial,sans-serif;overscroll-behavior-y:auto;overflow-x:hidden;overflow-y:auto}button,input,select{font:inherit}
+.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:8px;padding:calc(8px + env(safe-area-inset-top)) 10px 8px;background:linear-gradient(110deg,var(--p2),var(--p));color:#fff;box-shadow:0 5px 20px #16273f35}
+.brand{flex:1;text-align:center;font-size:20px;font-weight:800}.icon{display:grid;place-items:center;width:46px;height:46px;border:1px solid #ffffff42;border-radius:16px;background:#ffffff17;color:#fff;font-size:23px}.icon:active{transform:scale(.96)}
+.status{display:flex;align-items:center;gap:5px;padding:7px 9px;border-radius:20px;background:#ffffff17;font-size:10px;white-space:nowrap}.dot{width:8px;height:8px;border-radius:50%;background:var(--y);box-shadow:0 0 0 3px #edbd0024}.status.ok .dot{background:#2bdb9b}.status.bad .dot{background:#ef6760}
+.wrap{width:min(1240px,100%);min-width:0;min-height:100dvh;margin:auto;padding:11px 11px calc(90px + env(safe-area-inset-bottom));overflow-x:hidden;overflow-y:visible}.page{display:none;min-width:0;max-width:100%;padding-bottom:24px;animation:appear .2s ease}.page.active{display:block}@keyframes appear{from{opacity:.2;transform:translateY(5px)}}
+.hero{position:relative;overflow:hidden;padding:21px;border-radius:22px;background:linear-gradient(135deg,#54215f,#173d68);color:#fff;box-shadow:0 10px 26px #293b5a22}.hero:after{content:"";position:absolute;width:160px;height:160px;border:30px solid #ffffff0d;border-radius:50%;left:-60px;top:-70px}.hero h1{font-size:24px;margin:0}.hero p{margin:8px 0 0;color:#dce7f2;font-size:12px}
+.executive-hero-content,.daily-hero-content{position:relative;z-index:1;display:flex;align-items:center;gap:18px}.executive-hero-title,.daily-hero-title{flex:1}.executive-hero-controls{display:flex;align-items:center;justify-content:flex-start;gap:8px;flex-wrap:wrap;max-width:720px}.executive-month-picker{display:flex;align-items:center;justify-content:flex-start;gap:8px;direction:rtl;flex-wrap:wrap}.executive-month-button{min-width:116px;padding:10px 14px;border:1px solid #ffffff58;border-radius:13px;background:#ffffff16;color:#fff;font-size:12px;font-weight:bold;cursor:pointer}.executive-month-button.active{border-color:#f6c814;background:#f6c814;color:#172431;box-shadow:0 5px 16px #0002}.executive-hero-select{min-width:150px;padding:10px 12px;border:1px solid #ffffff62;border-radius:13px;background:#fff;color:var(--ink);font-size:12px;font-weight:bold}.executive-month-note{display:block;margin-top:6px;color:#eef5fb;font-size:9px}.daily-date-field{display:grid;gap:6px;min-width:210px}.daily-date-field label{font-size:10px;color:#dce7f2}.daily-date-field select{width:100%;padding:11px 13px;border:1px solid #ffffff62;border-radius:13px;background:#fff;color:var(--ink);font-weight:bold}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:11px}.metric{background:var(--card);border-radius:17px;padding:14px 9px;text-align:center;border-bottom:4px solid var(--g);box-shadow:0 5px 17px #26384d10}.metric:nth-child(2n){border-color:var(--y)}.metric:nth-child(3n){border-color:var(--c)}.metric:nth-child(4n){border-color:var(--p)}.metric span{display:block;color:var(--muted);font-size:11px}.metric b{display:block;margin-top:7px;font-size:21px;direction:ltr}
+.section{background:var(--card);border-radius:18px;padding:14px;margin-top:11px;box-shadow:0 5px 17px #26384d0e}.section-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}.section-head h2{flex:1;margin:0;font-size:18px}.subtle{color:var(--muted);font-size:11px}
+.report-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.report-card{position:relative;overflow:hidden;border:1px solid #e0e8ee;border-radius:16px;padding:15px;background:linear-gradient(150deg,#fff,#f7fafc);text-align:right;min-height:115px}.report-card:before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--c)}.report-card:nth-child(2):before{background:var(--g)}.report-card:nth-child(3):before{background:var(--p)}.report-card:nth-child(4):before{background:var(--y)}.report-card b{display:block;font-size:15px}.report-card small{display:block;color:var(--muted);margin-top:7px;line-height:1.7}.badge{display:inline-block;margin-top:9px;padding:4px 8px;border-radius:12px;background:#dcf6e9;color:#08754d;font-size:10px}
+.toolbar{display:grid;grid-template-columns:minmax(130px,1fr) minmax(130px,1fr) auto;gap:7px;margin:9px 0}.toolbar input,.toolbar select{width:100%;min-width:0;padding:11px;border:1px solid #cbd6df;border-radius:11px;background:#fff}.primary,.soft{border:0;border-radius:11px;padding:11px 13px;font-weight:bold}.primary{background:var(--p);color:#fff}.soft{background:#edf3f7;color:var(--n)}
+.table-scroll{max-width:100%;overflow-x:auto;overflow-y:visible;border:1px solid var(--line);border-radius:13px;-webkit-overflow-scrolling:touch}.data-table{width:100%;min-width:780px;border-collapse:separate;border-spacing:0}.data-table th{position:sticky;top:0;z-index:2;padding:9px 6px;background:var(--n);color:#fff;font-size:11px;white-space:nowrap;border-left:1px solid #ffffff2b}.data-table th.table-sortable{cursor:pointer;user-select:none}.data-table th.table-sortable:after{content:' ↕';color:#b9d7e8;font-size:9px}.data-table th.table-sortable.sort-asc:after{content:' ▲';color:#ffd31b}.data-table th.table-sortable.sort-desc:after{content:' ▼';color:#ffd31b}.data-table td{padding:8px 6px;border-bottom:1px solid var(--line);border-left:1px solid var(--line);text-align:center;font-size:11px;white-space:nowrap}.data-table tbody tr:nth-child(even){background:#f3f7fa}.data-table .branch{text-align:right;direction:ltr}.daily-table,.monthly-table{min-width:650px;table-layout:fixed}.daily-table th:first-child,.daily-table td:first-child,.monthly-table th:first-child,.monthly-table td:first-child{position:sticky;right:0;z-index:3;width:145px;max-width:145px;overflow:hidden;text-overflow:ellipsis;background:#fff}.daily-table th:first-child,.monthly-table th:first-child{z-index:5;background:var(--n)}.daily-table tbody tr:nth-child(even) td:first-child,.monthly-table tbody tr:nth-child(even) td:first-child{background:#f3f7fa}.daily-table th:not(:first-child),.daily-table td:not(:first-child){width:94px}.monthly-table th:not(:first-child),.monthly-table td:not(:first-child){width:99px}.good{color:#08754d;font-weight:bold}.warn{color:#9a6400;font-weight:bold}.bad{color:var(--r);font-weight:bold}
+.chart{direction:ltr;display:flex;align-items:end;gap:4px;width:100%;max-width:100%;min-width:0;height:250px;padding:30px 8px 27px;border-radius:13px;background:#211e3b;overflow-x:auto;overscroll-behavior-x:contain}.col{position:relative;width:var(--w,30px);min-width:var(--w,30px);height:var(--h);border-radius:4px 4px 2px 2px;background:linear-gradient(#ffd31b,#e9ad00)}.col.selected{outline:3px solid #35c2d1;outline-offset:2px;filter:drop-shadow(0 0 7px #35c2d188)}.col.selected i{color:#4fe4f1;font-weight:bold}.col b{position:absolute;top:-20px;left:50%;transform:translateX(-50%);z-index:1;color:#fff;font-size:8px;font-weight:700;line-height:1;white-space:nowrap;text-shadow:0 1px 2px #000}.col i{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);color:#d7d4e2;font-size:8px;font-style:normal}
+.reservation-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.mini{background:#f6f9fb;border:1px solid #e1e7ed;border-radius:15px;padding:14px;text-align:center}.mini b{display:block;font-size:22px;margin-top:5px}.reservation-source-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:10px}.reservation-source-card{padding:14px;border:1px solid #dce5eb;border-radius:16px;background:#fff;box-shadow:0 5px 17px #26384d0b}.reservation-source-head{display:flex;align-items:center;gap:8px;padding-bottom:10px;border-bottom:1px solid var(--line)}.reservation-source-head span{flex:1;font-size:15px;font-weight:bold}.reservation-source-head b{font-size:24px;direction:ltr}.reservation-source-modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}.reservation-source-mode{padding:10px;border-radius:12px;background:#f4f8fa;text-align:center}.reservation-source-mode span{display:block;color:var(--muted);font-size:10px;line-height:1.5}.reservation-source-mode b{display:block;margin-top:5px;font-size:19px}.compact{min-width:420px}.compact td,.compact th{padding:8px}.reservation-detail-table{min-width:540px;table-layout:fixed}.reservation-detail-table th,.reservation-detail-table td{width:78px}.reservation-detail-table th.name-col,.reservation-detail-table td.name-col{width:190px;max-width:190px;overflow:hidden;text-overflow:ellipsis}.reservation-detail-table .mode-indoor{color:var(--n);font-weight:bold}.reservation-detail-table .mode-outdoor{color:var(--p);font-weight:bold}
+.reservation-performance-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:11px}.reservation-chart-card{min-width:0;padding:14px;border-radius:18px;background:#fff;box-shadow:0 5px 17px #26384d0e}.reservation-chart-head{display:flex;align-items:flex-start;gap:8px;margin-bottom:9px}.reservation-chart-head h2{flex:1;margin:0;font-size:17px}.reservation-chart-head p{margin:5px 0 0;color:var(--muted);font-size:9px}.reservation-chart-legend{display:flex;align-items:center;gap:9px;direction:ltr;color:var(--muted);font-size:9px;white-space:nowrap}.reservation-chart-legend i{display:inline-block;width:9px;height:9px;margin-right:3px;border-radius:3px}.legend-indoor{background:#25b6c8}.legend-outdoor{background:#f3b70b}.chart-expand{display:grid;place-items:center;width:34px;height:34px;flex:0 0 34px;border:1px solid #cbd8e1;border-radius:10px;background:#f5f9fb;color:var(--n);font-size:19px;cursor:pointer}.reservation-performance-chart{direction:ltr;display:flex;align-items:stretch;gap:7px;width:100%;height:270px;padding:24px 9px 8px;border-radius:13px;background:#211e3b;overflow-x:auto;overscroll-behavior-x:contain}.reservation-day{position:relative;display:flex;align-items:flex-end;justify-content:center;gap:3px;min-width:56px;height:100%;padding:0 2px 39px;border-bottom:1px solid #ffffff29}.reservation-day-label{position:absolute;bottom:4px;left:0;width:100%;color:#bbb7cd;text-align:center;font-size:8px}.reservation-day-total{position:absolute;bottom:17px;left:0;width:100%;color:#fff;text-align:center;font-size:9px;font-weight:bold;direction:rtl;white-space:nowrap}.reservation-bar{position:relative;width:19px;min-height:0;border-radius:5px 5px 2px 2px}.reservation-bar.indoor{background:linear-gradient(#41c9d6,#1596ad)}.reservation-bar.outdoor{background:linear-gradient(#ffd31b,#e9ad00)}.reservation-bar b{position:absolute;top:-17px;left:50%;transform:translateX(-50%);color:#fff;font-size:7px;white-space:nowrap}.reservation-chart-empty{display:grid;place-items:center;width:100%;height:100%;color:#d7d4e2;text-align:center;font-size:11px;line-height:1.8}.reservation-chart-card.chart-fullscreen{position:fixed;inset:0;z-index:1000;display:flex;flex-direction:column;padding:max(14px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(14px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));border-radius:0;background:#fff}.reservation-chart-card.chart-fullscreen .reservation-performance-chart{flex:1;height:auto;min-height:0}.reservation-chart-card.chart-fullscreen .reservation-day{min-width:75px}.reservation-chart-card.chart-fullscreen .reservation-bar{width:28px}.reservation-chart-card.chart-fullscreen .reservation-bar b{font-size:10px}.reservation-chart-card.chart-fullscreen .reservation-day-total{font-size:11px}.reservation-chart-card.chart-fullscreen .reservation-day-label{font-size:10px}
+.exec-list{display:grid;grid-template-columns:minmax(0,1fr);gap:9px}.exec-list .section{min-width:0;margin-top:0}.exec-table{table-layout:fixed}.exec-region-table{min-width:760px}.exec-branch-table{min-width:520px}.exec-table th:first-child,.exec-table td:first-child{position:sticky;right:0;z-index:3;width:170px;max-width:170px;overflow:hidden;text-overflow:ellipsis;background:#fff}.exec-table th:first-child{z-index:5;background:var(--n)}.exec-table tbody tr:nth-child(even) td:first-child{background:#f3f7fa}.exec-table th:not(:first-child),.exec-table td:not(:first-child){width:92px}.table-swipe{white-space:nowrap}.notice{padding:35px 16px;text-align:center;color:var(--muted)}.notice b{display:block;color:var(--ink);font-size:17px;margin-bottom:8px}
+.heat-head{flex-wrap:wrap}.heat-head select{min-width:145px;padding:9px;border:1px solid #cbd6df;border-radius:10px;background:#fff;color:var(--ink)}.heat-map-layout{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:10px;direction:ltr;align-items:stretch}.heat-map-shell{position:relative;direction:ltr;overflow:hidden;height:min(68vh,650px);min-height:480px;border:1px solid #cbd7dd;border-radius:15px;background:#e7ecef}.heat-map-shell.map-fullscreen{position:fixed!important;z-index:10000!important;inset:0!important;width:100vw!important;height:100dvh!important;min-height:0!important;border:0!important;border-radius:0!important}.heat-fullscreen-open{overflow:hidden!important}.heat-map-shell #heatMapSvg{display:block;width:100%;height:100%;min-height:480px;touch-action:none;cursor:grab;user-select:none}.heat-map-shell.map-fullscreen #heatMapSvg{min-height:100dvh}.heat-map-shell #heatMapSvg.dragging{cursor:grabbing}.heat-map-shell.leaflet-ready #heatMapSvg{display:none}.heat-map-shell.leaflet-ready #heatLeaflet{display:block}.heat-map-shell.leaflet-ready .heat-controls{display:none}#heatLeaflet{display:none;position:absolute;z-index:1;inset:0;width:100%;height:100%;background:#e8edf0}.leaflet-container{font-family:Tahoma,Arial,sans-serif}.leaflet-control-zoom a{color:#08643d!important}.leaflet-control-layers{direction:rtl;text-align:right}.leaflet-control-layers-expanded{min-width:142px;color:#19372b}.leaflet-control-layers label{font-size:11px}.leaflet-control-attribution{font-size:8px!important}.heat-map-state{position:absolute;z-index:5;top:10px;right:10px;max-width:60%;padding:7px 10px;border-radius:10px;background:#ffffffed;color:#42515d;font-size:9px;box-shadow:0 2px 10px #17243124}.heat-map-state[hidden]{display:none}.heat-region{fill:#fff;stroke:#b7c3c9;stroke-width:.75;vector-effect:non-scaling-stroke}.heat-point{cursor:pointer}.heat-point .bubble{vector-effect:non-scaling-stroke;stroke:#263b34;stroke-width:1.5;fill-opacity:.86}.heat-point.selected .bubble{stroke:#fff;stroke-width:3.2;fill-opacity:.98}.heat-controls{position:absolute;z-index:3;top:10px;left:10px;display:grid;gap:6px}.heat-controls button{display:grid;place-items:center;width:39px;height:39px;padding:0;border:1px solid #c8d3dc;border-radius:10px;background:#fff;color:#08643d;font-size:21px;font-weight:bold;box-shadow:0 3px 12px #17243124}.heat-fullscreen-button{position:absolute;z-index:7;left:10px;bottom:30px;display:grid;place-items:center;width:42px;height:42px;padding:0;border:1px solid #c8d3dc;border-radius:9px;background:#fff;color:#173d32;font-size:22px;font-weight:bold;box-shadow:0 3px 12px #17243135}.heat-map-shell.map-fullscreen .heat-fullscreen-button{bottom:34px}.heat-legend{position:absolute;z-index:5;right:9px;bottom:24px;display:flex;align-items:center;gap:6px;padding:7px 9px;border-radius:10px;background:#ffffffed;box-shadow:0 2px 10px #17243118;color:#4b5965;font-size:9px;direction:ltr}.heat-gradient{width:120px;height:9px;border:1px solid #b9aa79;border-radius:9px;background:linear-gradient(90deg,#750d0d 0%,#c52a22 24%,#ee7b21 45%,#f1c928 64%,#8dcd72 82%,#075f37 100%)}.heat-side{height:min(68vh,650px);min-height:480px;overflow:auto;direction:rtl;padding:10px;border:1px solid #d4dee3;border-radius:15px;background:#f7faf8}.heat-total{padding:15px;border-radius:13px;background:linear-gradient(135deg,#0b7046,#084c34);color:#fff}.heat-total span{display:block;font-size:10px;color:#d9f3e4}.heat-total b{display:block;margin-top:7px;font-size:25px;direction:ltr;text-align:right}.heat-total small{display:block;margin-top:7px;color:#d9f3e4;font-size:9px;line-height:1.6}.heat-side-title{margin:14px 2px 7px;font-size:12px;font-weight:bold;color:#405148}.heat-detail{display:grid;gap:9px;margin-top:9px;padding:11px;border:1px solid #cfe4d8;border-radius:12px;background:#fff;box-shadow:0 3px 12px #123c2510}.heat-detail b{display:block;font-size:14px;color:#075a38}.heat-detail p{margin:5px 0 0;color:var(--muted);font-size:10px;line-height:1.75}.heat-detail button{width:100%;white-space:nowrap;color:#075a38;background:#e6f4ec}.heat-ranking{display:grid;gap:6px}.heat-rank{display:grid;grid-template-columns:24px minmax(0,1fr) auto;align-items:center;gap:7px;width:100%;padding:8px;border:1px solid #dde7e1;border-radius:10px;background:#fff;color:var(--ink);text-align:right}.heat-rank:hover,.heat-rank.active{border-color:#4ca273;background:#eaf6ef}.heat-rank i{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#e2f1e8;color:#087047;font-size:9px;font-style:normal;font-weight:bold}.heat-rank span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px}.heat-rank b{font-size:9px;direction:ltr;white-space:nowrap}.heat-source{margin-top:8px;line-height:1.7}
+.heat-level-filter{display:grid;grid-template-columns:auto minmax(180px,360px) auto;align-items:center;gap:10px;width:100%;padding:11px 13px;margin-bottom:10px;border:1px solid #dbe4e8;border-radius:14px;background:linear-gradient(120deg,#fff7f5,#fff9dc 52%,#edf9f1);box-shadow:inset 0 0 0 1px #ffffff}.heat-level-copy{display:grid;gap:2px;min-width:150px}.heat-level-copy b{font-size:12px;color:#263942}.heat-level-copy small{font-size:9px;color:var(--muted)}.heat-level-range{width:100%;height:18px;margin:0;appearance:none;background:transparent;cursor:pointer;direction:ltr}.heat-level-range::-webkit-slider-runnable-track{height:11px;border:1px solid #c7b98f;border-radius:20px;background:linear-gradient(90deg,#850e11,#ce3426 25%,#ef8521 50%,#e6ca2a 70%,#0b7244)}.heat-level-range::-webkit-slider-thumb{width:25px;height:25px;margin-top:-8px;appearance:none;border:4px solid #fff;border-radius:50%;background:#173d68;box-shadow:0 2px 9px #0005}.heat-level-range::-moz-range-track{height:11px;border:1px solid #c7b98f;border-radius:20px;background:linear-gradient(90deg,#850e11,#ce3426 25%,#ef8521 50%,#e6ca2a 70%,#0b7244)}.heat-level-range::-moz-range-thumb{width:18px;height:18px;border:4px solid #fff;border-radius:50%;background:#173d68;box-shadow:0 2px 9px #0005}.heat-level-reset{padding:8px 11px;border:0;border-radius:10px;background:#fff;color:var(--n);font-size:10px;font-weight:bold;box-shadow:0 2px 8px #26384d18}.heat-date-select{min-width:150px}
+.drawer{position:fixed;z-index:60;top:0;right:0;width:min(355px,86vw);max-width:100vw;height:100dvh;padding:calc(16px + env(safe-area-inset-top)) 12px calc(14px + env(safe-area-inset-bottom));background:#fff;transform:translate3d(105%,0,0);transition:.24s;box-shadow:-15px 0 38px #12203845;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain}.drawer.open{transform:translate3d(0,0,0)}.drawer-head{padding:18px;border-radius:19px;background:linear-gradient(135deg,#54215f,#173b68);color:#fff;margin-bottom:8px}.drawer-head b{font-size:19px}.drawer-head p{font-size:11px;margin:6px 0 0;color:#dfe8f2}.nav{display:block;width:100%;padding:13px 11px;border:0;border-bottom:1px solid #edf0f3;background:#fff;color:#253644;text-align:right}.nav.active{border-radius:11px;background:#f1e9f3;color:var(--p);font-weight:bold}.drawer-foot{margin-top:25px;display:grid;grid-template-columns:1fr 1fr;gap:7px}.shade{display:none;position:fixed;z-index:50;inset:0;background:#15223588;touch-action:none}.shade.show{display:block}
+.toast{position:fixed;z-index:90;right:50%;bottom:calc(22px + env(safe-area-inset-bottom));transform:translateX(50%) translateY(100px);max-width:90%;padding:11px 16px;border-radius:14px;background:#172431;color:#fff;opacity:0;transition:.25s;font-size:12px;box-shadow:0 8px 30px #0004}.toast.show{opacity:1;transform:translateX(50%)}
+.sync-panel{display:none;position:relative;z-index:10;margin:0 0 9px;padding:11px 13px;border:1px solid #d9e3eb;border-radius:15px;background:#fff;box-shadow:0 7px 20px #17243118}.sync-panel.show{display:block}.sync-line{display:flex;gap:8px;align-items:center}.sync-line b{flex:1;font-size:12px}.sync-line span{font-size:11px;color:var(--muted);direction:ltr}.progress{height:7px;margin-top:9px;border-radius:9px;background:#e7edf2;overflow:hidden}.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--c),var(--p));transition:width .35s}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:11px;color:var(--muted)}.field input,.field select,.field textarea{width:100%;min-width:0;padding:12px;border:1px solid #cbd6df;border-radius:11px;background:#fff;color:var(--ink)}.field textarea{min-height:74px;resize:vertical}
+.stepper{margin-top:13px}.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.step{position:relative;text-align:center;color:#8995a0;font-size:9px;padding-top:18px}.step:before{content:"";position:absolute;top:4px;right:50%;width:11px;height:11px;border-radius:50%;background:#ccd5dc;transform:translateX(50%)}.step.done{color:#08754d}.step.done:before{background:var(--g)}.step.active{color:var(--p);font-weight:bold}.step.active:before{background:var(--p);box-shadow:0 0 0 4px #5c1d6622}.step.error{color:var(--r)}.step.error:before{background:var(--r)}
+.settings-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.settings-card{border:1px solid var(--line);border-radius:14px;padding:12px;background:#f9fbfc}.settings-card h3{margin:0 0 10px;font-size:14px}.check-row{display:flex;align-items:center;gap:8px;margin:8px 0;font-size:12px}.check-row input{width:19px;height:19px}.email-slots{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:9px}.email-slot{padding:8px;border:1px solid var(--line);border-radius:11px;background:#fff}.email-slot label{display:block;margin-bottom:6px;color:var(--muted);font-size:9px}.email-slot-controls{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:3px;direction:ltr}.email-slot select{width:100%;min-width:0;padding:8px 3px;border:1px solid #cbd6df;border-radius:8px;background:#fff;font-size:11px}
+.schedule-table{min-width:670px}.user-item,.diagnostic{border:1px solid var(--line);border-radius:13px;padding:11px;margin-top:8px;background:#fbfcfd}.user-item-head,.diagnostic-head{display:flex;align-items:center;gap:8px}.user-item-head b,.diagnostic-head b{flex:1}.diagnostic code{direction:ltr;display:inline-block;margin-top:7px;padding:5px 8px;border-radius:8px;background:#e9eef3;color:#172431;font-weight:bold}.diagnostic.error{border-right:4px solid var(--r)}.diagnostic.warning{border-right:4px solid var(--y)}.diagnostic.info{border-right:4px solid var(--c)}.diagnostic p{font-size:11px;line-height:1.7;color:var(--muted);margin:7px 0 0}.empty{padding:28px 10px;text-align:center;color:var(--muted)}
+.recipient-add{display:grid;grid-template-columns:1fr auto;gap:7px;margin-top:10px}.recipient-add input{min-width:0;padding:11px;border:1px solid #cbd6df;border-radius:11px;direction:ltr}.recipient-row{display:flex;align-items:center;gap:8px}.recipient-row b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}.automation-card{border:1px solid var(--line);border-radius:15px;padding:13px;background:#f9fbfc}.automation-card h3{margin:0 0 9px}.automation-card .field{margin-top:9px}.admin-message{min-height:18px;margin:10px 0 0}.archive-preview{margin-top:12px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}.archive-preview h3{margin:0;padding:11px 13px;background:#edf3f7}.archive-preview iframe{display:block;width:100%;height:65vh;border:0;background:#fff}
+.pill{padding:5px 8px;border-radius:10px;background:#edf3f7;color:var(--n);font-size:10px}.target-default-mark{display:inline-block;margin-inline-start:4px;color:#765500;font-size:.75em;vertical-align:super}.danger{background:#fff0ef;color:var(--r)}
+@media(max-width:720px){.brand{font-size:17px}.status{max-width:88px;overflow:hidden}.metrics{grid-template-columns:1fr 1fr}.report-grid{grid-template-columns:1fr 1fr}.metric b{font-size:18px}.wrap{padding:8px}.hero{padding:18px}.executive-hero-content,.daily-hero-content{align-items:flex-start;flex-direction:column}.executive-hero-controls,.executive-month-picker,.daily-date-field{width:100%}.executive-hero-select{flex:1;min-width:135px}.executive-month-button{flex:1;min-width:105px}.toolbar{grid-template-columns:1fr 1fr}.toolbar .primary{grid-column:1/-1}.reservation-cards{grid-template-columns:repeat(3,1fr)}.reservation-source-grid,.reservation-performance-grid{grid-template-columns:1fr}.email-slots{grid-template-columns:repeat(2,minmax(0,1fr))}.heat-level-filter{grid-template-columns:1fr}.heat-level-copy{min-width:0}.heat-level-reset{width:100%}}
+@media(max-width:900px){.heat-map-layout{grid-template-columns:minmax(0,1fr) 230px}}
+@media(max-width:720px){.heat-map-layout{grid-template-columns:1fr}.heat-map-shell{height:57vh;min-height:430px}.heat-map-shell #heatMapSvg{height:100%;min-height:430px}.heat-side{height:auto;min-height:0;max-height:none}.heat-ranking{grid-template-columns:1fr 1fr}}
+@media(max-width:430px){.heat-ranking{grid-template-columns:1fr}}
+@media(max-width:560px){.form-grid,.settings-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.top{gap:5px}.icon{width:43px;height:43px}.status{padding:6px}.steps{gap:1px}.step{font-size:8px}}
+@media(min-width:900px){.wrap{padding:18px}.hero{padding:27px}.metric{min-height:104px}.report-card{min-height:128px}.top{padding-left:24px;padding-right:24px}}
+</style>
+<style id="wareed-comparison-styles">
+.compare-controls{display:grid;grid-template-columns:repeat(4,minmax(135px,1fr));gap:9px;align-items:end}.compare-controls .field{min-width:0}.compare-report-type{margin-bottom:10px}.compare-report-type select{width:100%;padding:12px;border:1px solid #cbd6df;border-radius:11px;background:#fff}.compare-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.compare-actions .soft{padding:10px 12px}.compare-show{width:100%;margin-top:10px}.compare-match{display:flex;align-items:center;gap:8px;min-height:38px;margin-top:9px;padding:9px 11px;border-radius:11px;background:#f0f5f8;color:#4f606d;font-size:10px;line-height:1.7}.compare-match b{color:var(--n)}
+.compare-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:11px}.compare-kpi{position:relative;overflow:hidden;min-width:0;padding:13px;border:1px solid #e0e8ed;border-radius:15px;background:linear-gradient(145deg,#fff,#f7fafc)}.compare-kpi:before{content:"";position:absolute;right:0;top:0;bottom:0;width:4px;background:var(--c)}.compare-kpi.up:before{background:var(--g)}.compare-kpi.down:before{background:var(--r)}.compare-kpi.neutral:before{background:#8795a0}.compare-kpi span{display:block;color:var(--muted);font-size:10px}.compare-kpi b{display:block;margin-top:6px;font-size:20px;direction:ltr;text-align:right}.compare-kpi small{display:block;margin-top:6px;font-size:9px;direction:ltr;text-align:right}.compare-kpi.up small{color:#08754d}.compare-kpi.down small{color:var(--r)}
+.compare-insights{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center;margin-top:11px;padding:14px;border-radius:16px;background:linear-gradient(135deg,#163f65,#54215f);color:#fff}.compare-insights strong{display:grid;place-items:center;width:58px;height:58px;border-radius:50%;background:#ffffff18;font-size:25px}.compare-insights h3{margin:0 0 5px;font-size:15px}.compare-insights p{margin:0;color:#dce7f2;font-size:10px;line-height:1.9}
+.compare-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:11px}.compare-panel{min-width:0;padding:14px;border-radius:18px;background:#fff;box-shadow:0 5px 17px #26384d0e}.compare-panel h2{margin:0 0 4px;font-size:17px}.compare-panel>p{margin:0 0 12px;color:var(--muted);font-size:9px}.compare-legend{display:flex;gap:12px;margin-bottom:10px;color:var(--muted);font-size:9px;direction:ltr}.compare-legend i{display:inline-block;width:10px;height:10px;margin-right:4px;border-radius:3px}.compare-legend .current{background:#25b6c8}.compare-legend .reference{background:#76508c}
+.pair-chart{display:grid;gap:12px;direction:rtl}.pair-row{display:grid;grid-template-columns:minmax(92px,145px) minmax(0,1fr);gap:9px;align-items:center}.pair-label b{display:block;font-size:11px}.pair-label small{display:block;margin-top:3px;color:var(--muted);font-size:8px;direction:ltr;text-align:right}.pair-tracks{display:grid;gap:4px;direction:ltr}.pair-track{height:18px;border-radius:8px;background:#edf2f5;overflow:hidden}.pair-track i{display:flex;align-items:center;justify-content:flex-end;height:100%;min-width:2px;padding:0 5px;border-radius:8px;color:#fff;font-size:8px;font-style:normal;white-space:nowrap}.pair-track.current i{background:linear-gradient(90deg,#178da7,#38c7d4)}.pair-track.reference i{background:linear-gradient(90deg,#56336a,#8b66a0)}
+.swing-chart{display:grid;gap:7px;direction:rtl}.swing-row{display:grid;grid-template-columns:minmax(100px,150px) minmax(0,1fr) 76px;gap:7px;align-items:center;font-size:9px}.swing-row>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.swing-row>b{direction:ltr;text-align:left}.swing-track{position:relative;height:13px;border-radius:8px;background:#eef2f4;direction:ltr;overflow:hidden}.swing-track:after{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:#aab5bd}.swing-track i{position:absolute;top:0;height:100%}.swing-track i.positive{background:var(--g)}.swing-track i.negative{background:var(--r)}
+.compare-toolbar{display:grid;grid-template-columns:minmax(140px,1fr) minmax(140px,220px);gap:7px;margin:10px 0}.compare-toolbar input,.compare-toolbar select{width:100%;min-width:0;padding:10px;border:1px solid #cbd6df;border-radius:10px;background:#fff}.compare-table{min-width:900px;table-layout:fixed}.compare-table th:first-child,.compare-table td:first-child{position:sticky;right:0;z-index:3;width:180px;max-width:180px;overflow:hidden;text-overflow:ellipsis;background:#fff}.compare-table th:first-child{z-index:5;background:var(--n)}.compare-table tbody tr:nth-child(even) td:first-child{background:#f3f7fa}.compare-table th:not(:first-child),.compare-table td:not(:first-child){width:105px}.delta-chip{display:inline-block;min-width:58px;padding:4px 7px;border-radius:15px;font-weight:bold;direction:ltr}.delta-chip.up{background:#dcf6e9;color:#08754d}.delta-chip.down{background:#fde8e6;color:#a5231d}.delta-chip.neutral{background:#eaf0f4;color:#62717d}.compare-empty{padding:34px 12px;text-align:center;color:var(--muted)}.comparison-anchor{scroll-margin-top:82px}.comparison-title{display:flex;align-items:center;gap:8px}.comparison-title h2{flex:1;margin:0}.comparison-title .pill{white-space:nowrap}
+.compare-table .up,.swing-row .up{color:#08754d;font-weight:bold}.compare-table .down,.swing-row .down{color:var(--r);font-weight:bold}.compare-table .neutral,.swing-row .neutral{color:#62717d;font-weight:bold}
+@media(max-width:900px){.compare-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:720px){.compare-controls{grid-template-columns:1fr 1fr}.compare-actions{display:grid;grid-template-columns:1fr 1fr}.compare-grid{grid-template-columns:1fr}.compare-kpis{grid-template-columns:1fr 1fr}.pair-row{grid-template-columns:105px minmax(0,1fr)}.swing-row{grid-template-columns:105px minmax(0,1fr) 66px}.compare-insights{grid-template-columns:48px minmax(0,1fr)}.compare-insights strong{width:48px;height:48px;font-size:20px}}
+@media(max-width:430px){.compare-controls{grid-template-columns:1fr}}
+</style>
+<link rel="stylesheet" href="portal.css">
+<script src="runtime-config.js"></script>
+<script src="portal-auth.js"></script>
+</head>
+<body class="portal-locked">
+<header class="top">
+  <button class="icon" aria-label="القائمة" onclick="drawer(true)">☰</button>
+  <div class="brand">Wareed BI Report</div>
+  <span id="status" class="status"><i class="dot"></i><span id="sourceStatus">تحميل البيانات</span></span>
+  <button id="refreshButton" class="icon" aria-label="تحديث" onclick="refreshData()">↻</button>
+</header>
+<aside id="drawer" class="drawer">
+  <div class="drawer-head"><b>Wareed BI Report</b><p>لوحة مباشرة • تقارير مستقلة • صلاحيات مخصصة</p></div>
+  <button class="nav active" data-page="home" onclick="go('home',this)">الرئيسية</button>
+  <button class="nav" data-page="executive" onclick="go('executive',this)">التقرير التنفيذي</button>
+  <button class="nav" data-page="daily" onclick="go('daily',this)">التقرير اليومي</button>
+  <button class="nav" data-page="salesComparison" onclick="go('salesComparison',this)">مركز المقارنات</button>
+  <button class="nav" data-page="monthly" onclick="go('monthly',this)">التقرير الشهري</button>
+  <button class="nav" data-page="reservations" onclick="go('reservations',this)">تقرير الحجوزات</button>
+  <button class="nav" data-page="send" data-owner-only onclick="go('send',this)">إرسال تقرير</button>
+  <button class="nav" data-page="archive" onclick="go('archive',this)">التقارير السابقة</button>
+  <button class="nav" data-page="recipients" data-owner-only onclick="go('recipients',this)">مستلمو التقارير</button>
+  <button class="nav" data-page="users" data-owner-only onclick="go('users',this)">إدارة المستخدمين</button>
+  <button class="nav" data-page="diagnostics" data-owner-only onclick="go('diagnostics',this)">مركز التشخيص والأخطاء</button>
+  <button class="nav" onclick="nativeCall('toggleLive')">▣ وضع الشاشة الحية</button>
+  <div class="drawer-foot"><button class="soft" onclick="refreshData()">↻ تحديث</button><button class="soft" data-owner-only onclick="go('settings')">⚙ الإعدادات</button></div>
+</aside>
+<div id="shade" class="shade" onclick="drawer(false)"></div>
+
+<main class="wrap">
+  <div id="syncPanel" class="sync-panel">
+    <div class="sync-line"><b id="syncMessage">الاستعداد للتحديث</b><span id="syncPercent">0%</span></div>
+    <div class="progress"><i id="syncBar"></i></div>
+  </div>
+  <section id="home" class="page active">
+    <div class="hero"><h1>الملخص التنفيذي المباشر</h1><p id="updated">جارٍ قراءة آخر بيانات محفوظة…</p></div>
+    <div class="metrics">
+      <div class="metric"><span>مبيعات اليوم</span><b data-key="dailyRevenue">—</b></div>
+      <div class="metric"><span>الهدف اليومي</span><b data-key="dailyTarget">—</b></div>
+      <div class="metric"><span>تحقيق اليوم</span><b data-key="dailyRate">—</b></div>
+      <div class="metric"><span>مبيعات الشهر</span><b data-key="monthRevenue">—</b></div>
+      <div class="metric"><span>الهدف الشهري</span><b data-key="monthTarget">—</b></div>
+      <div class="metric"><span>تحقيق الشهر</span><b data-key="monthRate">—</b></div>
+      <div class="metric"><span>عملاء الكاش</span><b data-key="dailyAcc">—</b></div>
+      <div class="metric"><span>حجوزات اليوم</span><b data-key="reservations">—</b></div>
+    </div>
+    <div class="section"><div class="section-head"><h2>التقارير</h2><span class="subtle">اضغط لفتح صفحة التقرير</span></div>
+      <div class="report-grid">
+        <article class="report-card" onclick="go('executive')"><b>التقرير التنفيذي</b><small>المبيعات والتارجت والحجوزات والخريطة التفاعلية</small><span class="badge">جاهز</span></article>
+        <article class="report-card" onclick="go('daily')"><b>التقرير اليومي</b><small>الفروع وتحقيق الهدف والفلترة والترتيب</small><span class="badge">جاهز</span></article>
+        <article class="report-card" onclick="go('monthly')"><b>التقرير الشهري</b><small>الإيراد والتارجت والمتبقي ونسبته</small><span class="badge">جاهز</span></article>
+        <article class="report-card" onclick="go('reservations')"><b>تقرير الحجوزات</b><small>المواعيد والفروع والموظفون في جداول مرتبة</small><span class="badge">جاهز</span></article>
+        <article class="report-card" onclick="go('salesComparison')"><b>مقارنات الأداء</b><small>اليوم مقابل أمس أو الأسبوع الماضي في الوقت نفسه</small><span class="badge">جديد</span></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="executive" class="page">
+    <div class="hero"><div class="executive-hero-content"><div class="executive-hero-title"><h1>التقرير التنفيذي</h1><p id="executiveUpdated">آخر لقطة مكتملة من Google Sheets: —</p><small id="executiveTargetBasis" class="executive-month-note">التارجت التنفيذي: فهد وريم</small></div><div class="executive-hero-controls"><div id="executiveMonthPicker" class="executive-month-picker" aria-label="اختيار شهر التقرير التنفيذي"></div><select id="heatMetric" class="executive-hero-select" onchange="renderHeatMap()" aria-label="اختيار بيانات الخريطة"><option value="daily" selected>مبيعات اليوم</option><option value="monthly">مبيعات الشهر — تحقيق الهدف %</option><option value="patients">عملاء ACC اليوم</option></select><select id="heatDate" class="executive-hero-select heat-date-select" onchange="selectHeatDate(this.value)" aria-label="اختيار يوم التقرير التنفيذي"></select></div></div></div>
+    <div class="metrics">
+      <div class="metric"><span id="executiveDailyRevenueLabel">مبيعات اليوم</span><b data-exec-key="dailyRevenue">—</b></div>
+      <div class="metric"><span id="executiveDailyRateLabel">تحقيق اليوم</span><b data-exec-key="dailyRate">—</b></div>
+      <div class="metric"><span>مبيعات الشهر</span><b data-exec-key="monthRevenue">—</b></div>
+      <div class="metric"><span>تحقيق الشهر</span><b data-exec-key="monthRate">—</b></div>
+    </div>
+    <div class="section"><div class="section-head"><h2>المبيعات من بداية الشهر</h2><span class="subtle">الأيام السابقة من VAT • اليوم من Branch Income</span></div><div id="trend" class="chart"></div></div>
+    <div class="section">
+      <div class="section-head heat-head"><h2>الخريطة الحرارية للفروع</h2><span id="executiveSelectedDay" class="pill">اليوم المختار</span></div>
+      <div class="heat-level-filter" aria-label="فلتر مستوى تحقيق الفروع"><div class="heat-level-copy"><b id="heatLevelLabel">كل مستويات الفروع</b><small id="heatLevelCount">—</small></div><input id="heatLevelRange" class="heat-level-range" type="range" min="-1" max="4" step="1" value="-1" oninput="setHeatLevel(this.value)" aria-label="اسحب لاختيار مستوى تحقيق الفروع"><button type="button" class="heat-level-reset" onclick="resetHeatLevel()">عرض جميع الفروع</button></div>
+      <div class="heat-map-layout">
+        <div class="heat-map-shell">
+          <div id="heatLeaflet" role="application" aria-label="خريطة طرق تفاعلية لفروع وريد"></div>
+          <svg id="heatMapSvg" role="img" aria-label="الخريطة الحرارية لفروع وريد"><g id="heatViewport"><g id="heatRegions"></g><g id="heatPoints"></g></g></svg>
+          <div id="heatMapState" class="heat-map-state">جارٍ تحميل خريطة الطرق…</div>
+          <div class="heat-controls"><button type="button" aria-label="تكبير الخريطة" onclick="setHeatZoom(1.35)">+</button><button type="button" aria-label="تصغير الخريطة" onclick="setHeatZoom(.74)">−</button><button type="button" aria-label="إعادة ضبط الخريطة" onclick="resetHeatZoom()">⌂</button></div>
+          <button type="button" id="heatFullscreenButton" class="heat-fullscreen-button" aria-label="عرض الخريطة بملء الشاشة" title="ملء الشاشة" onclick="toggleHeatFullscreen()">⛶</button>
+          <div class="heat-legend"><span>بعيد جدًا</span><i class="heat-gradient"></i><span>حقق الهدف</span></div>
+        </div>
+        <aside class="heat-side" aria-label="بيانات فروع الخريطة">
+          <div class="heat-total"><span id="heatTotalLabel">إجمالي مبيعات اليوم</span><b id="heatTotal">—</b><small id="heatCoverage">—</small></div>
+          <div id="heatDetail" class="heat-detail"><div><b>اختر فرعًا من الخريطة</b><p>ستظهر هنا بيانات الموقع والمبيعات والعملاء.</p></div></div>
+          <div class="heat-side-title">أعلى الفروع حسب المؤشر</div>
+          <div id="heatRanking" class="heat-ranking"></div>
+        </aside>
+      </div>
+      <p id="heatSource" class="subtle heat-source">الخريطة بلا بيانات بعد.</p>
+    </div>
+    <div class="exec-list">
+      <div class="section"><div class="section-head"><h2 id="executiveRegionsTitle">ملخص المدن والمناطق</h2><span class="pill table-swipe">حرّك الجدول ← →</span></div><div class="table-scroll"><table class="data-table exec-table exec-region-table"><thead><tr><th>المدينة / التجمع</th><th>عدد الفروع</th><th>إيراد اليوم</th><th>تارجت اليوم</th><th>إيراد الشهر</th><th>تارجت الشهر</th><th>ACC</th></tr></thead><tbody id="executiveRegions"></tbody></table></div></div>
+      <div class="section"><div class="section-head"><h2 id="executiveBranchesTitle">أعلى الفروع اليوم</h2><span class="pill table-swipe">حرّك الجدول ← →</span></div><div class="table-scroll"><table class="data-table exec-table exec-branch-table"><thead><tr><th>الفرع</th><th>الإيراد</th><th>ACC</th><th>الهدف</th></tr></thead><tbody id="executiveBranches"></tbody></table></div></div>
+    </div>
+  </section>
+
+  <section id="daily" class="page">
+    <div class="hero"><div class="daily-hero-content"><div class="daily-hero-title"><h1>التقرير اليومي</h1><p id="dailyUpdated">آخر سحب ناجح من Branch Income: —</p><p id="dailyPeriod">فترة التقرير: —</p></div><div class="daily-date-field"><label for="dailyDate">اختر يوم التقرير</label><select id="dailyDate" onchange="selectDailyDate(this.value)"></select></div></div></div>
+    <div class="metrics">
+      <div class="metric"><span>المبيعات</span><b data-daily-key="dailyRevenue">—</b></div>
+      <div class="metric"><span>التارجت</span><b data-daily-key="dailyTarget">—</b></div>
+      <div class="metric"><span>نسبة التحقيق</span><b data-daily-key="dailyRate">—</b></div>
+      <div class="metric"><span>عملاء ACC</span><b data-daily-key="dailyAcc">—</b></div>
+    </div>
+    <div class="section">
+      <div class="section-head"><h2>تفاصيل مبيعات الفروع اليوم</h2><span class="subtle">المصدر: Google Sheets • سحب العامل من LDM Branch Income</span></div>
+      <div class="toolbar"><input id="dailyFilter" placeholder="فلترة باسم الفرع" oninput="renderDaily()"><select id="dailySort" onchange="renderDaily()"><option value="rate">التحقيق: الأعلى</option><option value="income">المبيعات: الأعلى</option><option value="target">التارجت: الأعلى</option><option value="branch">اسم الفرع</option></select><button class="primary" onclick="exportReport('daily')">تنزيل / مشاركة</button></div>
+      <div class="table-scroll"><table class="data-table daily-table"><thead><tr><th>الفرع</th><th>ACC</th><th>إيراد اليوم</th><th>الهدف اليومي</th><th>التحقيق</th><th>المتبقي</th></tr></thead><tbody id="dailyRows"></tbody></table></div>
+    </div>
+  </section>
+
+  <section id="salesComparison" class="page">
+    <div class="hero"><h1>مركز المقارنات</h1><p>اختر التقرير ثم التاريخ والوقت المتاحين لعرض مقارنة دقيقة</p></div>
+    <div class="section">
+      <div class="section-head"><h2>اختر التقرير واليومين</h2><span class="pill">بيانات محفوظة فعلية</span></div>
+      <div class="field compare-report-type"><label>نوع التقرير</label><select id="comparisonReportType" onchange="comparisonReportTypeChanged(this.value)"><option value="sales">المبيعات اليومية</option><option value="reservations">الحجوزات</option></select></div>
+      <div class="compare-controls">
+        <div class="field"><label>التاريخ الذي تريد تحليله</label><select id="centerCompareCurrentDate" onchange="populateComparisonTimes(document.getElementById('comparisonReportType').value,'center','current')"></select></div>
+        <div class="field"><label>حتى أي وقت؟</label><select id="centerCompareCurrentTime"></select></div>
+        <div class="field"><label>قارن مع تاريخ</label><select id="centerCompareReferenceDate" onchange="populateComparisonTimes(document.getElementById('comparisonReportType').value,'center','reference')"></select></div>
+        <div class="field"><label>حتى أي وقت؟</label><select id="centerCompareReferenceTime"></select></div>
+      </div>
+      <button class="primary compare-show" onclick="showCenterComparison()">اعرض النتيجة ببساطة</button>
+      <div class="compare-actions"><button class="soft" onclick="quickCompareFromCenter('previousDay')">أمس نفس الوقت</button><button class="soft" onclick="quickCompareFromCenter('lastWeek')">الأسبوع الماضي</button><button class="soft" onclick="quickCompareFromCenter('previousSnapshot')">اللقطة السابقة</button></div>
+      <div id="salesCompareMatch" class="compare-match">جارٍ تجهيز الفترات المتاحة…</div>
+    </div>
+    <div id="salesComparisonResultArea">
+    <div id="salesCompareKpis" class="compare-kpis"></div>
+    <div id="salesCompareInsights" class="compare-insights"></div>
+    <div class="compare-grid">
+      <article class="compare-panel"><h2>اليوم مقارنة باليوم المختار</h2><p>المبيعات والعملاء ومتوسط قيمة العميل</p><div class="compare-legend"><span><i class="current"></i><b id="salesCompareCurrentLegend">اليوم</b></span><span><i class="reference"></i><b id="salesCompareReferenceLegend">أمس</b></span></div><div id="salesCompareOverall" class="pair-chart"></div></article>
+      <article class="compare-panel"><h2>أين تحسنت المبيعات وأين انخفضت؟</h2><p>أكبر الفروع ارتفاعًا أو انخفاضًا بالمبلغ</p><div id="salesCompareSwing" class="swing-chart"></div></article>
+    </div>
+    <div class="section">
+      <div class="section-head"><h2>كم باع كل فرع؟</h2><span id="salesCompareCount" class="pill">—</span></div>
+      <div class="compare-toolbar"><input id="salesCompareFilter" placeholder="ابحث باسم الفرع" oninput="renderSalesComparisonTable()"><select id="salesCompareSort" onchange="renderSalesComparisonTable()"><option value="gain">أكبر تحسن</option><option value="loss">أكبر انخفاض</option><option value="current">مبيعات اليوم</option><option value="name">اسم الفرع</option></select></div>
+      <div class="table-scroll"><table class="data-table compare-table"><thead><tr><th>الفرع</th><th id="salesCurrentHeader">اليوم</th><th id="salesReferenceHeader">أمس</th><th>زاد / نقص</th><th>النسبة</th><th id="salesCurrentAccHeader">عملاء اليوم</th><th id="salesReferenceAccHeader">عملاء أمس</th><th>فرق العملاء</th></tr></thead><tbody id="salesCompareRows"></tbody></table></div>
+    </div>
+    </div>
+  </section>
+
+  <section id="monthly" class="page">
+    <div class="hero"><h1>التقرير الشهري</h1><p id="monthlyUpdated">محدّث حتى: —</p><p>الوقت مأخوذ من آخر فاتورة في تقرير VAT</p></div>
+    <div class="metrics">
+      <div class="metric"><span>مبيعات الشهر</span><b data-key="monthRevenue">—</b></div>
+      <div class="metric"><span>التارجت الشهري</span><b data-key="monthTarget">—</b></div>
+      <div class="metric"><span>نسبة التحقيق</span><b data-key="monthRate">—</b></div>
+      <div class="metric"><span>نسبة المتبقي</span><b data-key="monthRemainingRate">—</b></div>
+    </div>
+    <div class="section">
+      <div class="toolbar"><input id="monthFilter" placeholder="فلترة باسم الفرع" oninput="renderMonthly()"><select id="monthSort" onchange="renderMonthly()"><option value="rate">التحقيق: الأعلى</option><option value="revenue">الإيراد: الأعلى</option><option value="remaining">المتبقي: الأعلى</option><option value="branch">اسم الفرع</option></select><button class="primary" onclick="exportReport('monthly')">تنزيل / مشاركة</button></div>
+      <div class="table-scroll"><table class="data-table monthly-table"><thead><tr><th>الفرع</th><th>إيراد الشهر</th><th>الهدف الشهري</th><th>نسبة التحقيق</th><th>المتبقي</th><th>نسبة المتبقي</th></tr></thead><tbody id="monthlyRows"></tbody></table></div>
+    </div>
+  </section>
+
+  <section id="reservations" class="page">
+    <div class="hero"><h1>تقرير الحجوزات</h1><p id="reservationUpdated">متابعة الحجوزات ومواعيد الزيارة</p></div>
+    <div class="reservation-cards"><div class="mini"><span>الإجمالي</span><b data-key="reservations">—</b></div><div class="mini"><span>Indoor</span><b id="indoor">—</b></div><div class="mini"><span>Outdoor</span><b id="outdoor">—</b></div></div>
+    <div class="reservation-source-grid" aria-label="تفصيل الحجوزات حسب مصدر الحجز ونوع الزيارة">
+      <article class="reservation-source-card"><div class="reservation-source-head"><span>خدمة العملاء</span><b id="callCenterReservations">—</b></div><div class="reservation-source-modes"><div class="reservation-source-mode"><span>زيارة فرع<br>Indoor</span><b id="callCenterIndoor">—</b></div><div class="reservation-source-mode"><span>زيارة منزلية<br>Outdoor</span><b id="callCenterOutdoor">—</b></div></div></article>
+      <article class="reservation-source-card"><div class="reservation-source-head"><span>حجوزات الفروع</span><b id="branchReservations">—</b></div><div class="reservation-source-modes"><div class="reservation-source-mode"><span>زيارة فرع<br>Indoor</span><b id="branchIndoor">—</b></div><div class="reservation-source-mode"><span>زيارة منزلية<br>Outdoor</span><b id="branchOutdoor">—</b></div></div></article>
+      <article class="reservation-source-card"><div class="reservation-source-head"><span>Wareed Mobile</span><b id="mobileReservations">—</b></div><div class="reservation-source-modes"><div class="reservation-source-mode"><span>زيارة فرع<br>Indoor</span><b id="mobileIndoor">—</b></div><div class="reservation-source-mode"><span>زيارة منزلية<br>Outdoor</span><b id="mobileOutdoor">—</b></div></div></article>
+    </div>
+    <p id="reservationSourceNote" class="subtle">بانتظار تفاصيل مصدر الحجوزات من LDM</p>
+    <p id="reservationModeNote" class="subtle">بانتظار آخر ملف حجوزات مكتمل من LDM</p>
+    <div class="reservation-performance-grid" aria-label="أداء الحجوزات اليومي حسب الجهة ونوع الزيارة">
+      <article class="reservation-chart-card">
+        <div class="reservation-chart-head"><div><h2>أداء خدمة العملاء يوميًا</h2><p>الحجوزات التي أنشأها موظفو خدمة العملاء</p></div><div class="reservation-chart-legend"><span><i class="legend-indoor"></i>Indoor</span><span><i class="legend-outdoor"></i>Outdoor</span></div><button class="chart-expand" onclick="toggleReservationChart(this)" aria-label="تكبير شارت خدمة العملاء" title="تكبير الشارت">⛶</button></div>
+        <div id="callCenterReservationChart" class="reservation-performance-chart"></div>
+      </article>
+      <article class="reservation-chart-card">
+        <div class="reservation-chart-head"><div><h2>أداء الفروع يوميًا</h2><p>الحجوزات التي أنشأها موظفو الفروع</p></div><div class="reservation-chart-legend"><span><i class="legend-indoor"></i>Indoor</span><span><i class="legend-outdoor"></i>Outdoor</span></div><button class="chart-expand" onclick="toggleReservationChart(this)" aria-label="تكبير شارت الفروع" title="تكبير الشارت">⛶</button></div>
+        <div id="branchReservationChart" class="reservation-performance-chart"></div>
+      </article>
+      <article class="reservation-chart-card">
+        <div class="reservation-chart-head"><div><h2>أداء Wareed Mobile يوميًا</h2><p>الحجوزات القادمة من التطبيق</p></div><div class="reservation-chart-legend"><span><i class="legend-indoor"></i>Indoor</span><span><i class="legend-outdoor"></i>Outdoor</span></div><button class="chart-expand" onclick="toggleReservationChart(this)" aria-label="تكبير شارت Wareed Mobile" title="تكبير الشارت">⛶</button></div>
+        <div id="mobileReservationChart" class="reservation-performance-chart"></div>
+      </article>
+    </div>
+    <p id="reservationPerformanceNote" class="subtle">الشارت مبني على اللقطات اليومية المكتملة المحفوظة من LDM</p><button class="soft" style="width:100%;margin-top:7px" onclick="document.getElementById('reservationComparison').scrollIntoView({behavior:'smooth',block:'start'})">فتح مقارنات الحجوزات</button>
+    <div class="section"><div class="section-head"><h2>مواعيد الزيارة</h2><button class="soft" onclick="exportReport('reservations')">تنزيل / مشاركة</button></div><div class="table-scroll"><table class="data-table compact reservation-detail-table"><thead><tr><th class="name-col">الفترة</th><th>الإجمالي</th><th>Indoor</th><th>Outdoor</th></tr></thead><tbody id="visitRows"></tbody></table></div></div>
+    <div class="section"><div class="section-head"><h2>الفروع</h2></div><div class="toolbar"><input id="reservationFilter" placeholder="فلترة الفروع" oninput="renderReservations()"><select id="reservationSort" onchange="renderReservations()"><option value="total">الحجوزات: الأعلى</option><option value="name">اسم الفرع</option></select><button class="soft" onclick="renderReservations()">تطبيق</button></div><div class="table-scroll"><table class="data-table compact reservation-detail-table"><thead><tr><th>#</th><th class="name-col">الفرع</th><th>الإجمالي</th><th>Indoor</th><th>Outdoor</th></tr></thead><tbody id="branchRows"></tbody></table></div></div>
+    <div class="section"><div class="section-head"><h2>موظفو الكول سنتر</h2></div><div class="table-scroll"><table class="data-table compact reservation-detail-table"><thead><tr><th>#</th><th class="name-col">الموظف</th><th>الإجمالي</th><th>Indoor</th><th>Outdoor</th></tr></thead><tbody id="callCenterEmployeeRows"></tbody></table></div></div>
+    <div class="section"><div class="section-head"><h2>موظفو الفروع</h2></div><div class="table-scroll"><table class="data-table compact reservation-detail-table"><thead><tr><th>#</th><th class="name-col">الموظف</th><th>الإجمالي</th><th>Indoor</th><th>Outdoor</th></tr></thead><tbody id="branchEmployeeRows"></tbody></table></div></div>
+    <div class="section comparison-anchor" id="reservationComparison">
+      <div class="comparison-title"><h2>مقارنات الحجوزات</h2><span class="pill">نفس الوقت ±15 دقيقة</span></div>
+      <p class="subtle">اعرف مباشرة كم حجزنا اليوم وكم كان الحجز أمس أو في اليوم الذي تختاره.</p>
+      <div class="compare-controls">
+        <div class="field"><label>التاريخ الذي تريد تحليله</label><select id="reservationCompareCurrentDate" onchange="populateComparisonTimes('reservations','reservation','current')"></select></div>
+        <div class="field"><label>حتى أي وقت؟</label><select id="reservationCompareCurrentTime"></select></div>
+        <div class="field"><label>قارن مع تاريخ</label><select id="reservationCompareReferenceDate" onchange="populateComparisonTimes('reservations','reservation','reference')"></select></div>
+        <div class="field"><label>حتى أي وقت؟</label><select id="reservationCompareReferenceTime"></select></div>
+      </div>
+      <button class="primary compare-show" onclick="applySplitComparison('reservations','reservation')">اعرض النتيجة ببساطة</button>
+      <div class="compare-actions"><button class="soft" onclick="quickCompare('reservations','previousDay')">أمس نفس الوقت</button><button class="soft" onclick="quickCompare('reservations','lastWeek')">الأسبوع الماضي</button><button class="soft" onclick="quickCompare('reservations','previousSnapshot')">اللقطة السابقة</button></div>
+      <div id="reservationCompareMatch" class="compare-match">جارٍ تجهيز الفترات المتاحة…</div>
+    </div>
+    <div id="reservationCompareKpis" class="compare-kpis"></div>
+    <div id="reservationCompareInsights" class="compare-insights"></div>
+    <div class="compare-grid">
+      <article class="compare-panel"><h2>زيارات الفروع والزيارات المنزلية</h2><p>Indoor يعني زيارة فرع، وOutdoor يعني زيارة منزلية</p><div class="compare-legend"><span><i class="current"></i><b id="reservationCompareCurrentLegend">اليوم</b></span><span><i class="reference"></i><b id="reservationCompareReferenceLegend">أمس</b></span></div><div id="reservationCompareModes" class="pair-chart"></div></article>
+      <article class="compare-panel"><h2>من أين جاءت الحجوزات؟</h2><p>خدمة العملاء والفروع وتطبيق Wareed Mobile</p><div class="compare-legend"><span><i class="current"></i><b id="reservationSourceCurrentLegend">اليوم</b></span><span><i class="reference"></i><b id="reservationSourceReferenceLegend">أمس</b></span></div><div id="reservationCompareSources" class="pair-chart"></div></article>
+    </div>
+    <div class="section"><div class="section-head"><h2>كم حجز كل فرع؟</h2><span id="reservationBranchCompareCount" class="pill">—</span></div><div class="table-scroll"><table class="data-table compare-table"><thead><tr><th>الفرع</th><th id="reservationBranchCurrentHeader">اليوم</th><th id="reservationBranchReferenceHeader">أمس</th><th>زاد / نقص</th><th>النسبة</th><th id="reservationBranchIndoorHeader">زيارة فرع اليوم</th><th id="reservationBranchOutdoorHeader">زيارة منزلية اليوم</th><th>النتيجة</th></tr></thead><tbody id="reservationBranchCompareRows"></tbody></table></div></div>
+    <div class="section"><div class="section-head"><h2>كم حجز كل موظف أو قناة؟</h2><span id="reservationEmployeeCompareCount" class="pill">—</span></div><div class="compare-toolbar"><input id="reservationEmployeeCompareFilter" placeholder="ابحث باسم الموظف" oninput="renderReservationComparisonTables()"><select id="reservationEmployeeCompareGroup" onchange="renderReservationComparisonTables()"><option value="all">الكل</option><option value="callCenter">خدمة العملاء</option><option value="branches">موظفو الفروع</option><option value="mobile">Wareed Mobile</option></select></div><div class="table-scroll"><table class="data-table compare-table"><thead><tr><th>الموظف / القناة</th><th>الجهة</th><th id="reservationEmployeeCurrentHeader">اليوم</th><th id="reservationEmployeeReferenceHeader">أمس</th><th>زاد / نقص</th><th id="reservationEmployeeIndoorHeader">زيارة فرع اليوم</th><th id="reservationEmployeeOutdoorHeader">زيارة منزلية اليوم</th><th>النتيجة</th></tr></thead><tbody id="reservationEmployeeCompareRows"></tbody></table></div></div>
+  </section>
+
+  <section id="send" class="page">
+    <div class="hero"><h1>إرسال تقرير</h1><p>لن تظهر حالة «تم الإرسال» إلا بعد تأكيد خدمة Google Apps Script</p></div>
+    <div class="section"><div class="form-grid">
+      <div class="field"><label>التقرير</label><select id="sendReport" onchange="updateSendRecipients()"><option value="">اختر التقرير</option><option value="executive">التنفيذي</option><option value="daily">اليومي</option><option value="monthly">الشهري</option><option value="reservations">الحجوزات</option></select></div>
+      <div class="field"><label>المستلم المعتمد</label><select id="sendEmail"><option value="">اختر التقرير أولاً</option></select></div>
+      <div class="field"><label>من</label><input type="date" id="sendFrom"></div>
+      <div class="field"><label>إلى</label><input type="date" id="sendTo"></div>
+    </div><button class="primary" style="width:100%;margin-top:12px" onclick="sendReport()">إرسال التقرير</button>
+    <div class="stepper"><div class="progress"><i id="sendBar"></i></div><p id="sendMessage" class="subtle">بانتظار طلب الإرسال</p></div></div>
+  </section>
+  <section id="archive" class="page"><div class="hero"><h1>التقارير السابقة</h1><p>فترة من وإلى، مع استرجاع التقرير من LDM وحفظ المعاينة في Google Sheets</p></div><div class="section"><div class="form-grid"><div class="field"><label>التقرير</label><select id="archiveReport"><option value="daily">اليومي</option><option value="monthly">الشهري</option><option value="reservations">الحجوزات</option><option value="executive">التنفيذي</option></select></div><div></div><div class="field"><label>من</label><input type="date" id="archiveFrom"></div><div class="field"><label>إلى</label><input type="date" id="archiveTo"></div></div><button class="primary" style="width:100%;margin-top:12px" onclick="requestArchive()">جلب ومعاينة التقرير</button><div class="progress"><i id="archiveBar"></i></div><p id="archiveMessage" class="subtle">بانتظار الطلب</p><div id="archivePreviewBox" class="archive-preview" hidden><h3 id="archivePreviewTitle">معاينة التقرير</h3><iframe id="archiveFrame" title="معاينة التقرير السابق"></iframe></div></div></section>
+  <section id="recipients" class="page"><div class="hero"><h1>مستلمو التقارير</h1><p>قوائم البريد المعتمدة سابقاً منفصلة تماماً عن مستخدمي التطبيق</p></div><div id="recipientsList"></div></section>
+  <section id="users" class="page"><div class="hero"><h1>صفحة المالك والإدارة</h1><p>المالك وحده يدير المستخدمين والإعدادات والإرسال</p></div><div class="section"><div class="section-head"><h2>حساب المالك</h2><span class="pill">Owner</span></div><div class="form-grid"><div class="field"><label>الاسم</label><input id="ownerName" disabled></div><div class="field"><label>البريد / اسم الدخول</label><input id="ownerEmail" disabled></div><div class="field"><label>طريقة الدخول</label><input value="بصمة أو قفل الجهاز — مرة واحدة للجلسة" disabled></div><div class="field"><label>الصلاحية</label><input value="مالك كامل الصلاحيات" disabled></div></div></div><div class="section"><div class="section-head"><h2>مستخدمو التقارير</h2><span class="subtle">عرض وطلب تقارير فقط — بلا إرسال ولا إعدادات</span></div><div class="form-grid"><div class="field"><label>اسم المستخدم</label><input id="userName"></div><div class="field"><label>البريد</label><input type="email" id="userEmail"></div><div class="field"><label>الدور</label><input value="مشاهد تقارير" disabled></div><div class="field"><label>الصلاحيات</label><div><label class="check-row"><input type="checkbox" name="permission" value="executive"> التنفيذي</label><label class="check-row"><input type="checkbox" name="permission" value="daily"> اليومي</label><label class="check-row"><input type="checkbox" name="permission" value="monthly"> الشهري</label><label class="check-row"><input type="checkbox" name="permission" value="reservations"> الحجوزات</label><label class="check-row"><input type="checkbox" name="permission" value="archive"> طلب التقارير السابقة</label></div></div></div><button class="primary" style="width:100%" onclick="saveUser()">حفظ مستخدم مشاهد</button><div id="usersList"></div></div></section>
+  <section id="settings" class="page">
+    <div class="hero"><h1>الإعدادات المتقدمة</h1><p>الربط، الشاشة الحية، تحديث كل تقرير وجدولة رسائل البريد</p></div>
+    <div class="section">
+      <div class="section-head"><h2>التطبيق والاتصال</h2><span class="pill">Asia/Riyadh</span></div>
+      <div class="form-grid">
+        <div class="field full"><label>رابط Google Apps Script Web App</label><input type="url" id="cloudEndpoint" placeholder="https://script.google.com/macros/s/.../exec"></div>
+        <div class="field"><label>الاسم</label><input id="profileName" disabled></div><div class="field"><label>البريد</label><input id="profileEmail" disabled></div>
+        <div class="field"><label>الدور</label><input id="profileRole" disabled></div><div class="field"><label>طريقة الدخول</label><input value="بصمة / قفل الجهاز مرة واحدة للجلسة" disabled></div>
+        <div class="field"><label>مصدر البيانات</label><input value="Google Sheets الموحد" disabled></div><div class="field"><label>سحب LDM والإرسال</label><input value="عامل Wareed على اللابتوب" disabled></div>
+        <div class="field"><label>تحديث الشاشة الحية</label><select id="liveIntervalMinutes"><option value="3">كل 3 دقائق</option><option value="5">كل 5 دقائق</option><option value="10">كل 10 دقائق</option><option value="15">كل 15 دقيقة</option><option value="30">كل 30 دقيقة</option><option value="60">كل ساعة</option></select></div>
+        <label class="check-row"><input type="checkbox" id="confirmBeforeSend"> طلب تأكيد قبل إرسال البريد</label>
+      </div>
+      <button class="primary" style="width:100%;margin-top:12px" onclick="saveSettings()">حفظ إعدادات التطبيق</button>
+      <p class="subtle">بيانات دخول LDM وSMTP تبقى في عامل Wareed ولا تُحفظ أو تُعرض داخل الجوال.</p>
+    </div>
+    <div class="section">
+      <div class="section-head"><h2>جدولة التحديث والإرسال</h2><span class="pill">تعمل من عامل Wareed</span></div>
+      <p class="subtle">يمكن تشغيل تحديث مستقل لكل تقرير وتحديد مدة التكرار، وتشغيل إرسال البريد في وقت أو أكثر. لن يُرسل أي تقرير تلقائيًا ما لم تفعّل الإرسال هنا.</p>
+      <div id="automationSettings" class="settings-grid"></div>
+      <button class="primary" style="width:100%;margin-top:12px" onclick="saveAutomation()">حفظ الجدولة على عامل Wareed</button>
+      <p id="automationMessage" class="subtle admin-message">بانتظار أي تعديل</p>
+    </div>
+  </section>
+  <section id="diagnostics" class="page"><div class="hero"><h1>مركز التشخيص والأخطاء</h1><p>رموز قابلة للنسخ وإرسالها إلى Codex دون كلمات مرور</p></div><div class="section"><div class="section-head"><h2>السجل</h2><button class="soft" onclick="copyDiagnostics()">نسخ التفاصيل</button><button class="soft danger" onclick="nativeCall('clearDiagnostics')">مسح</button></div><div id="diagnosticsList"></div></div></section>
+</main>
+<div id="toast" class="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" onerror="window.WAREED_MAP_LIBRARY_FAILED=true"></script>
+<script>window.WAREED_PACKAGED_BOOTSTRAP=null;</script>
+<script>
+let DATA={metrics:{},daily:{rows:[]},monthly:{rows:[]},executive:{trend:[]},reservations:{visits:[],branches:[],employees:[]},comparisons:{sales:[],reservations:[]}};
+let EXECUTIVE_SELECTED_MONTH='';
+let DAILY_SELECTED_DATE='';
+let HEAT_SELECTED_DATE='';
+const nf=new Intl.NumberFormat('en-US',{maximumFractionDigits:0});
+const money=value=>nf.format(Math.round(Number(value)||0));
+const pct=value=>(Number(value)||0).toFixed(1)+'%';
+const pctBidi=value=>'\u2066'+pct(value)+'\u2069';
+const defaultDailyTarget=()=>Math.max(1,Number(DATA.daily?.defaultDailyTarget)||5000);
+const defaultMonthlyTarget=()=>Math.max(defaultDailyTarget(),Number(DATA.daily?.defaultMonthlyTarget)||defaultDailyTarget()*new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate());
+const targetDefaultMark=value=>value?'<span class="target-default-mark" aria-hidden="true">◈</span>':'';
+function nativeCall(name,arg){try{if(window.WareedNative&&typeof WareedNative[name]==='function'){if(arguments.length>1)WareedNative[name](arg);else WareedNative[name]();return}portableCall(name,arg)}catch(error){toast('تعذر تنفيذ الأمر')}}
+let CURRENT_PAGE='home';
+function drawer(open){document.getElementById('drawer').classList.toggle('open',open);document.getElementById('shade').classList.toggle('show',open)}
+function go(id,button){if(document.querySelector('[data-owner-only][data-page="'+id+'"]')?.hidden)return;CURRENT_PAGE=id;document.querySelectorAll('.page').forEach(page=>page.classList.toggle('active',page.id===id));document.querySelectorAll('.nav').forEach(nav=>nav.classList.toggle('active',nav.dataset.page===id));drawer(false);scrollTo({top:0,left:0,behavior:'instant'});if(id==='executive')setTimeout(()=>{if(typeof fitStreetMapBounds==='function')fitStreetMapBounds()},80);nativeCall('pageChanged',id)}
+function toast(message){const view=document.getElementById('toast');view.textContent=message;view.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>view.classList.remove('show'),2600)}
+function refreshData(){document.getElementById('sourceStatus').textContent='جارٍ التحديث';const report=CURRENT_PAGE==='salesComparison'?'daily':CURRENT_PAGE;nativeCall('refreshReport',report);toast('أُرسل طلب التحديث إلى عامل Wareed لحفظه في Google Sheets')}
+function exportReport(type){nativeCall('exportReport',type);toast('جارٍ تجهيز ملف التقرير')}
+let LOCAL={config:{},profile:{},diagnostics:[],users:[]};
+function safeParse(value,fallback){try{return typeof value==='string'?JSON.parse(value):value||fallback}catch(e){return fallback}}
+let PORTABLE_LIVE_TIMER=null,PORTABLE_REFRESH_RUNNING=false;
+function portableCloudSettings(){const bundled=window.WAREED_CLOUD_CONFIG||{},sameServer=/^https?:$/.test(location.protocol)?'/api/cloud':'';return {endpoint:LOCAL.config.cloudEndpoint||bundled.cloudEndpoint||sameServer,appKey:bundled.appKey||''}}
+function portableRequestId(){return 'web_'+Date.now()+'_'+Math.random().toString(36).slice(2,12)}
+async function portableCloudPost(body){const cloud=portableCloudSettings();if(!cloud.endpoint)throw new Error('افتح النسخة الحية من رابط خادم Wareed');const request=cloud.appKey?{...body,appKey:cloud.appKey}:body,response=await fetch(cloud.endpoint,{method:'POST',redirect:'follow',cache:'no-store',credentials:'same-origin',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(request)}),text=await response.text();let payload;try{payload=JSON.parse(text)}catch{throw new Error('رد خدمة Google غير مفهوم')}if(!response.ok||payload.ok!==true)throw new Error(payload.error||'تعذر الاتصال بخدمة Google');return payload}
+function portableSnapshotStamp(payload){const snapshot=payload?.snapshot||{};return String(snapshot.store?.publishedAt||snapshot.generatedAt||snapshot.daily?.capturedAt||'')}
+async function portableLoadLive(silent=false){if(window.WareedNative)return null;try{const payload=await portableCloudPost({action:'appBootstrap'});applyCloudBootstrap(payload);document.getElementById('sourceStatus').textContent='متصل لايف بـ Google Sheets';if(!silent)toast('تم جلب آخر تحديث لايف');return payload}catch(error){document.getElementById('sourceStatus').textContent='تعذر الاتصال • آخر نسخة محفوظة';if(!silent)toast(error.message);return null}}
+async function portableRefreshReport(report){if(PORTABLE_REFRESH_RUNNING)return toast('يوجد تحديث يعمل الآن');PORTABLE_REFRESH_RUNNING=true;const allowed=['executive','daily','monthly','reservations'];if(!allowed.includes(report))report='executive';const before=String(DATA.store?.publishedAt||DATA.generatedAt||DATA.daily?.capturedAt||'');applyState({sync:{running:true,stage:'queue',percent:10,message:'جارٍ إرسال طلب التحديث إلى عامل Wareed'}});try{const queued=await portableCloudPost({action:'appRefreshReport',report,clientRequestId:portableRequestId()});if(!queued.request?.id)throw new Error('لم تُرجع الخدمة رقم طلب');for(let attempt=1;attempt<=36;attempt++){await new Promise(resolve=>setTimeout(resolve,5000));const live=await portableLoadLive(true),stamp=portableSnapshotStamp(live);applyState({sync:{running:true,stage:'refresh',percent:Math.min(95,15+attempt*2),message:'عامل Wareed يحدّث '+(REPORT_NAMES[report]||'التقرير')}});if(stamp&&stamp!==before){applyState({sync:{running:false,stage:'complete',percent:100,message:'اكتمل التحديث اللايف على الجهاز الثاني'}});toast('اكتمل التحديث اللايف');return}}throw new Error('لم يكتمل التحديث خلال 3 دقائق')}catch(error){applyState({sync:{running:false,stage:'error',percent:100,message:error.message}});toast(error.message)}finally{PORTABLE_REFRESH_RUNNING=false}}
+async function portableQueue(action,payload,done){try{const result=await portableCloudPost({action,...safeParse(payload,{}),clientRequestId:portableRequestId()});done(result)}catch(error){toast(error.message)}}
+function portableCall(name,arg){if(name==='refreshReport')return portableRefreshReport(String(arg||'executive'));if(name==='sendReport')return portableQueue('appSendReport',arg,()=>sendProgressUpdate('queued',35,'قَبِل العامل طلب الإرسال'));if(name==='requestArchive')return portableQueue('appArchiveReport',arg,()=>reportRequestUpdate('queued',28,'قَبِل العامل طلب التقرير السابق'));if(name==='saveLocalConfig'){try{localStorage.setItem('wareedPortableConfig',arg)}catch{}return}if(name==='copyText'){navigator.clipboard?.writeText(String(arg||''));return}if(name==='toggleLive'){portableLoadLive();return}}
+function startPortableLive(){if(window.WareedNative)return;clearInterval(PORTABLE_LIVE_TIMER);PORTABLE_LIVE_TIMER=setInterval(()=>portableLoadLive(true),60000)}
+function applyLocalConfig(config,profile,diagnostics){
+  LOCAL.config=safeParse(config,{});LOCAL.profile=safeParse(profile,{});LOCAL.diagnostics=safeParse(diagnostics,[]);
+  LOCAL.users=Array.isArray(LOCAL.config.users)?LOCAL.config.users:[];
+  document.getElementById('cloudEndpoint').value=LOCAL.config.cloudEndpoint||'';
+  document.getElementById('confirmBeforeSend').checked=LOCAL.config.confirmBeforeSend!==false;
+  document.getElementById('liveIntervalMinutes').value=String(LOCAL.config.liveIntervalMinutes||3);
+  document.getElementById('profileName').value=LOCAL.profile.name||'';
+  document.getElementById('profileEmail').value=LOCAL.profile.email||'';
+  document.getElementById('profileRole').value=LOCAL.profile.role==='owner'?'مالك':'مشاهد';
+  document.getElementById('ownerName').value=LOCAL.profile.name||'';
+  document.getElementById('ownerEmail').value=LOCAL.profile.email||'';
+  applyRolePermissions();renderUsers();renderDiagnostics();renderRecipients();renderAutomation();updateSendRecipients();
+}
+function applyRolePermissions(){const owner=LOCAL.profile.role==='owner';document.querySelectorAll('[data-owner-only]').forEach(node=>node.hidden=!owner);if(!owner&&['send','recipients','users','settings','diagnostics'].includes(CURRENT_PAGE))go('home')}
+function saveSettings(){
+  const endpoint=document.getElementById('cloudEndpoint').value.trim();
+  if(endpoint&&!/^https:\/\/script\.google\.com\//i.test(endpoint)){toast('أدخل رابط Google Apps Script صالحًا');return}
+  LOCAL.config={...LOCAL.config,cloudEndpoint:endpoint,confirmBeforeSend:document.getElementById('confirmBeforeSend').checked,liveIntervalMinutes:Number(document.getElementById('liveIntervalMinutes').value)||3,users:LOCAL.users};
+  nativeCall('saveLocalConfig',JSON.stringify(LOCAL.config));
+}
+function saveUser(){
+  const username=document.getElementById('userName').value.trim(),email=document.getElementById('userEmail').value.trim().toLowerCase(),role='viewer';
+  const permissions=[...document.querySelectorAll('[name=permission]:checked')].map(x=>x.value);
+  if(username.length<2||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)||!permissions.length){toast('أدخل الاسم والبريد وصلاحية واحدة على الأقل');return}
+  const user={username,email,role,permissions,enabled:true,updatedAt:Date.now()},index=LOCAL.users.findIndex(x=>x.email===email);
+  if(index>=0)LOCAL.users[index]=user;else LOCAL.users.push(user);
+  LOCAL.config={...LOCAL.config,users:LOCAL.users};nativeCall('saveLocalConfig',JSON.stringify(LOCAL.config));renderUsers();
+  document.getElementById('userName').value='';document.getElementById('userEmail').value='';
+}
+function toggleUser(email){const user=LOCAL.users.find(x=>x.email===email);if(!user)return;user.enabled=!user.enabled;LOCAL.config={...LOCAL.config,users:LOCAL.users};nativeCall('saveLocalConfig',JSON.stringify(LOCAL.config));renderUsers()}
+function renderUsers(){const view=document.getElementById('usersList');if(!view)return;view.innerHTML=LOCAL.users.length?LOCAL.users.map(u=>'<div class="user-item"><div class="user-item-head"><b>'+escapeHtml(u.username)+'</b><span class="pill">مشاهد</span><button class="soft '+(u.enabled?'danger':'')+'" onclick="toggleUser(\''+escapeJs(u.email)+'\')">'+(u.enabled?'تعطيل':'تفعيل')+'</button></div><small>'+escapeHtml(u.email)+' • عرض/طلب فقط: '+u.permissions.map(escapeHtml).join(', ')+'</small></div>').join(''):'<div class="empty">لا يوجد مستخدمون محليون بعد</div>'}
+function diagnosticStage(code){return String(code||'').split('-').slice(0,2).join('-')}
+function renderDiagnostics(){const view=document.getElementById('diagnosticsList');if(!view)return;view.innerHTML=LOCAL.diagnostics.length?[...LOCAL.diagnostics].reverse().map(x=>'<div class="diagnostic '+escapeHtml(x.level||'info')+'"><div class="diagnostic-head"><b>'+escapeHtml(x.message||'حدث تشخيصي')+'</b><span class="pill">'+new Date(x.at).toLocaleString('ar-SA')+'</span></div><code>'+escapeHtml(x.code||'APP-UNKNOWN')+'</code><p><b>المرحلة:</b> '+escapeHtml(diagnosticStage(x.code))+'<br>'+escapeHtml(x.details||'لا توجد تفاصيل إضافية')+'</p></div>').join(''):'<div class="empty">لا توجد أخطاء مسجلة</div>'}
+function onDiagnostic(item){LOCAL.diagnostics.push(item);renderDiagnostics()}
+function copyDiagnostics(){nativeCall('copyText',JSON.stringify(LOCAL.diagnostics,null,2))}
+function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function escapeJs(value){return String(value??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
+const REPORT_NAMES={executive:'التقرير التنفيذي',daily:'التقرير اليومي',monthly:'التقرير الشهري',reservations:'تقرير الحجوزات'};
+function renderRecipients(){
+  const view=document.getElementById('recipientsList');if(!view)return;const groups=DATA.recipients||{};
+  view.innerHTML='<p id="recipientMessage" class="subtle admin-message">الإضافة والحذف تُحفظ في عامل Wareed ثم تُنشر إلى Google Sheets</p>'+
+    Object.keys(REPORT_NAMES).map(type=>'<div class="section"><div class="section-head"><h2>'+REPORT_NAMES[type]+'</h2><span class="pill">'+(groups[type]||[]).length+' مستلم</span></div>'+
+    ((groups[type]||[]).map(email=>'<div class="user-item recipient-row"><b dir="ltr">'+escapeHtml(email)+'</b><button class="soft danger" onclick="changeRecipient(\''+type+'\',\'remove\',\''+escapeJs(email)+'\')">حذف</button></div>').join('')||'<div class="empty">لا يوجد مستلمون معتمدون</div>')+
+    '<div class="recipient-add"><input type="email" id="recipientInput-'+type+'" placeholder="name@wareed.com.sa"><button class="primary" onclick="addRecipient(\''+type+'\')">إضافة</button></div></div>').join('');
+}
+function addRecipient(type){const input=document.getElementById('recipientInput-'+type),email=input.value.trim();changeRecipient(type,'add',email)}
+function changeRecipient(report,operation,email){
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){toast('أدخل بريدًا صحيحًا');return}
+  if(operation==='remove'&&!confirm('حذف '+email+' من مستلمي '+REPORT_NAMES[report]+'؟'))return;
+  cloudAdminUpdate('recipient','queued',8,operation==='add'?'جارٍ إضافة المستلم':'جارٍ حذف المستلم');
+  nativeCall('manageCloud',JSON.stringify({command:'recipient',report,operation,email}));
+}
+function updateSendRecipients(){const report=document.getElementById('sendReport').value,select=document.getElementById('sendEmail'),rows=DATA.recipients?.[report]||[];const previous=select.value;select.innerHTML='<option value="">اختر المستلم</option>'+rows.map(email=>'<option value="'+escapeHtml(email)+'">'+escapeHtml(email)+'</option>').join('');if(rows.includes(previous))select.value=previous}
+function sendReport(){
+  const payload={report:document.getElementById('sendReport').value,from:document.getElementById('sendFrom').value,to:document.getElementById('sendTo').value,email:document.getElementById('sendEmail').value.trim()};
+  if(!payload.report||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(payload.email)||!/^\d{4}-\d{2}-\d{2}$/.test(payload.from)||!/^\d{4}-\d{2}-\d{2}$/.test(payload.to)||payload.from>payload.to){sendProgressUpdate('error',0,'أكمل التقرير والمستلم وفترة صحيحة');return}
+  sendProgressUpdate('prepare',5,'تم التحقق من البيانات');
+  if(LOCAL.config.confirmBeforeSend!==false&&!confirm('إرسال التقرير إلى '+payload.email+' من بريد Wareed؟')){sendProgressUpdate('cancelled',0,'أُلغي الطلب قبل الإرسال');return}
+  sendProgressUpdate('prepare',8,'جارٍ تسليم الطلب إلى خدمة Google');
+  nativeCall('sendReport',JSON.stringify(payload));
+}
+function sendProgressUpdate(stage,percent,message){document.getElementById('sendBar').style.width=Math.max(0,Math.min(100,percent))+'%';document.getElementById('sendMessage').textContent=message;document.getElementById('sendMessage').className=stage==='error'?'bad':'subtle'}
+function requestArchive(){
+  const payload={report:document.getElementById('archiveReport').value,from:document.getElementById('archiveFrom').value,to:document.getElementById('archiveTo').value};
+  if(!payload.report||!/^\d{4}-\d{2}-\d{2}$/.test(payload.from)||!/^\d{4}-\d{2}-\d{2}$/.test(payload.to)||payload.from>payload.to){reportRequestUpdate('error',0,'اختر التقرير وفترة صحيحة');return}
+  document.getElementById('archivePreviewBox').hidden=true;reportRequestUpdate('prepare',5,'تم التحقق من الفترة');
+  nativeCall('requestArchive',JSON.stringify(payload));
+}
+function reportRequestUpdate(stage,percent,message){document.getElementById('archiveBar').style.width=Math.max(0,Math.min(100,percent))+'%';document.getElementById('archiveMessage').textContent=message;document.getElementById('archiveMessage').className=stage==='error'?'bad':'subtle'}
+function archivePreview(html,report){document.getElementById('archivePreviewTitle').textContent='معاينة '+(REPORT_NAMES[report]||'التقرير السابق');document.getElementById('archiveFrame').srcdoc=html;document.getElementById('archivePreviewBox').hidden=false;setTimeout(()=>document.getElementById('archivePreviewBox').scrollIntoView({behavior:'smooth',block:'start'}),150)}
+function cloudAdminUpdate(operation,stage,percent,message){
+  const id=operation==='automation'?'automationMessage':'recipientMessage',view=document.getElementById(id);
+  if(view){view.textContent=(percent?percent+'% • ':'')+message;view.className=stage==='error'?'bad admin-message':'subtle admin-message'}
+  if(stage==='complete')toast(message)
+}
+const AUTOMATION_INTERVALS=[3,5,10,15,30,60,120,180,360,720,1440];
+const DEFAULT_EMAIL_TIMES=['09:00','12:00','14:00','16:00','18:00','20:00','22:00','00:01'];
+const AUTOMATION_HOURS=Array.from({length:24},(_,hour)=>String(hour).padStart(2,'0'));
+const AUTOMATION_MINUTES=Array.from({length:60},(_,minute)=>String(minute).padStart(2,'0'));
+function timePartOptions(values,selected){return values.map(value=>'<option value="'+value+'" '+(value===selected?'selected':'')+'>'+value+'</option>').join('')}
+function emailSlotControls(type,times){return times.map((time,index)=>{const parts=String(time||'00:00').split(':'),hour=parts[0]||'00',minute=parts[1]||'00';return '<div class="email-slot"><label>الإرسالية '+(index+1)+'</label><div class="email-slot-controls"><select id="autoEmailHour-'+type+'-'+index+'">'+timePartOptions(AUTOMATION_HOURS,hour)+'</select><b>:</b><select id="autoEmailMinute-'+type+'-'+index+'">'+timePartOptions(AUTOMATION_MINUTES,minute)+'</select></div></div>'}).join('')}
+function renderAutomation(){
+  const view=document.getElementById('automationSettings');if(!view)return;
+  const reports=DATA.automation?.reports||{};
+  view.innerHTML=Object.keys(REPORT_NAMES).map(type=>{
+    const item=reports[type]||{},every=Number(item.refreshEveryMinutes)||(type==='daily'?15:60);
+    const configured=Array.isArray(item.emailTimes)?item.emailTimes.filter(value=>/^([01]\d|2[0-3]):[0-5]\d$/.test(value)):[],times=[...new Set([...configured,...DEFAULT_EMAIL_TIMES])].slice(0,8);
+    const lastRefresh=DATA.automation?.state?.lastRefresh?.[type],lastEmail=DATA.automation?.state?.lastEmail?.[type];
+    const options=AUTOMATION_INTERVALS.map(value=>'<option value="'+value+'" '+(value===every?'selected':'')+'>'+(value<60?'كل '+value+' دقيقة':value===60?'كل ساعة':value<1440?'كل '+(value/60)+' ساعات':'كل يوم')+'</option>').join('');
+    return '<div class="automation-card"><h3>'+REPORT_NAMES[type]+'</h3>'+
+      '<label class="check-row"><input type="checkbox" id="autoRefresh-'+type+'" '+(item.refreshEnabled?'checked':'')+'> تحديث تلقائي من LDM إلى Google Sheets</label>'+
+      '<div class="field"><label>تكرار التحديث</label><select id="autoEvery-'+type+'">'+options+'</select></div>'+
+      '<label class="check-row"><input type="checkbox" id="autoEmail-'+type+'" '+(item.emailEnabled?'checked':'')+'> إرسال البريد تلقائيًا للمستلمين المعتمدين</label>'+
+      '<div class="email-slots">'+emailSlotControls(type,times)+'</div>'+
+      '<p class="subtle">خمس إرساليات مستقلة بتوقيت الرياض وبنظام 24 ساعة. الإرسالية الخامسة الافتراضية 00:03 (12:03 ص).</p>'+
+      '<p class="subtle">آخر تحديث تلقائي: '+(lastRefresh?escapeHtml(reportStamp(lastRefresh)):'لم يعمل بعد')+'<br>آخر موعد إرسال بدأ: '+(lastEmail?escapeHtml(lastEmail.replace('|',' ')):'لم يعمل بعد')+'</p></div>';
+  }).join('');
+}
+function saveAutomation(){
+  const reports={};
+  for(const type of Object.keys(REPORT_NAMES)){
+    const emailTimes=DEFAULT_EMAIL_TIMES.map((_,index)=>document.getElementById('autoEmailHour-'+type+'-'+index).value+':'+document.getElementById('autoEmailMinute-'+type+'-'+index).value);
+    if(new Set(emailTimes).size!==emailTimes.length){cloudAdminUpdate('automation','error',0,'أوقات الإرسال يجب أن تكون مختلفة في '+REPORT_NAMES[type]);return}
+    reports[type]={refreshEnabled:document.getElementById('autoRefresh-'+type).checked,refreshEveryMinutes:Number(document.getElementById('autoEvery-'+type).value),emailEnabled:document.getElementById('autoEmail-'+type).checked,emailTimes};
+  }
+  cloudAdminUpdate('automation','queued',8,'جارٍ حفظ الجدولة على عامل Wareed');
+  nativeCall('manageCloud',JSON.stringify({command:'automation',config:{timezone:'Asia/Riyadh',reports}}));
+}
+function availableDailyDates(monthKey){
+  const reports=DATA.daily?.reports||{},dates=(DATA.daily?.availableDates||Object.keys(reports)).filter(date=>reports[date]);
+  return dates.filter(date=>!monthKey||date.slice(0,7)===monthKey).sort();
+}
+function dailyView(){
+  const reports=DATA.daily?.reports||{},dates=availableDailyDates();
+  if(!DAILY_SELECTED_DATE||!reports[DAILY_SELECTED_DATE])DAILY_SELECTED_DATE=dates.at(-1)||'';
+  return reports[DAILY_SELECTED_DATE]||{date:DAILY_SELECTED_DATE,capturedAt:DATA.daily?.capturedAt,from:DATA.daily?.from,to:DATA.daily?.to,rows:DATA.daily?.rows||[],metrics:{dailyRevenue:DATA.metrics?.dailyRevenue,dailyTarget:DATA.metrics?.dailyTarget,dailyRate:DATA.metrics?.dailyRate,dailyAcc:DATA.metrics?.dailyAcc}};
+}
+function renderDailyDatePicker(){
+  const select=document.getElementById('dailyDate');if(!select)return;dailyView();
+  const dates=availableDailyDates();select.innerHTML=dates.map(date=>'<option value="'+escapeHtml(date)+'" '+(date===DAILY_SELECTED_DATE?'selected':'')+'>'+escapeHtml(date.split('-').reverse().join('/'))+'</option>').join('');
+  if(!dates.length)select.innerHTML='<option value="">اليوم الحالي</option>';
+}
+function updateDailyHeader(){
+  const view=dailyView();document.getElementById('dailyUpdated').textContent='آخر سحب ناجح من Branch Income: '+reportStamp(view.capturedAt);document.getElementById('dailyPeriod').textContent='فترة التقرير: '+(view.from||'—')+' إلى '+(view.to||'—');
+}
+function selectDailyDate(date){DAILY_SELECTED_DATE=date;renderDailyDatePicker();paintMetrics();renderDaily();updateDailyHeader()}
+function heatDayView(){
+  const month=executiveView(),reports=DATA.daily?.reports||{},dates=availableDailyDates(month.monthKey);
+  if(!HEAT_SELECTED_DATE||!reports[HEAT_SELECTED_DATE]||HEAT_SELECTED_DATE.slice(0,7)!==month.monthKey)HEAT_SELECTED_DATE=dates.at(-1)||'';
+  return reports[HEAT_SELECTED_DATE]||{date:HEAT_SELECTED_DATE,rows:month.dailyRows||DATA.daily?.rows||[],metrics:month.metrics||DATA.metrics};
+}
+function renderHeatDatePicker(){
+  const select=document.getElementById('heatDate');if(!select)return;const month=executiveView(),dates=availableDailyDates(month.monthKey);heatDayView();
+  select.innerHTML=dates.map(date=>'<option value="'+escapeHtml(date)+'" '+(date===HEAT_SELECTED_DATE?'selected':'')+'>'+escapeHtml(date.split('-').reverse().join('/'))+'</option>').join('');if(!dates.length)select.innerHTML='<option value="">لا توجد أيام محفوظة</option>';
+}
+function selectHeatDate(date){HEAT_SELECTED_DATE=date;HEAT.selected=-1;HEAT.boundsFitted=false;HEAT.visibleBoundsFitted=false;paintMetrics();renderTrend();renderExecutive()}
+function executiveView(){
+  const executive=DATA.executive||{},months=executive.months||{},keys=(executive.availableMonths||Object.keys(months)).filter(key=>months[key]).sort();
+  if(!EXECUTIVE_SELECTED_MONTH||!months[EXECUTIVE_SELECTED_MONTH])EXECUTIVE_SELECTED_MONTH=months[executive.currentMonth]?executive.currentMonth:(keys.at(-1)||'');
+  return months[EXECUTIVE_SELECTED_MONTH]||{...executive,monthKey:executive.currentMonth||'',label:'الشهر الحالي',metrics:executive.metrics||DATA.metrics,dailyRows:DATA.daily?.rows||[],monthlyRows:DATA.monthly?.rows||[],heatTargets:DATA.daily?.heatTargets||{}};
+}
+function renderExecutiveMonthPicker(){
+  const picker=document.getElementById('executiveMonthPicker');if(!picker)return;
+  const executive=DATA.executive||{},months=executive.months||{},keys=(executive.availableMonths||Object.keys(months)).filter(key=>months[key]).sort();
+  picker.innerHTML=keys.map(key=>'<button type="button" class="executive-month-button'+(key===EXECUTIVE_SELECTED_MONTH?' active':'')+'" onclick="selectExecutiveMonth(\''+escapeHtml(key)+'\')">'+escapeHtml(months[key].label||key)+'</button>').join('');
+  const view=executiveView(),note=document.getElementById('executiveTargetBasis');if(note)note.textContent='التارجت التنفيذي: فهد وريم • المصدر: '+(view.targetSheet||'صفحة تارجت الشهر');
+}
+function selectExecutiveMonth(key){
+  if(!DATA.executive?.months?.[key])return;EXECUTIVE_SELECTED_MONTH=key;HEAT_SELECTED_DATE='';HEAT.selected=-1;HEAT.boundsFitted=false;HEAT.visibleBoundsFitted=false;
+  renderExecutiveMonthPicker();paintMetrics();renderTrend();renderExecutive();if(HEAT.map)setTimeout(()=>fitStreetMapBounds(),80);
+}
+function executiveTargetForDay(branch,month){const key=normalName(branch),aliases={'home visit ruh':'home visit','home visit asir':'home visit abha','home visit jazan':'home visit jizan','al taif2':'al taif2 jed','khamis mushait asir':'khamis mushait abha','alkurnish jazan':'alkurnish jizan'},targets=month.heatTargets||DATA.daily?.heatTargets||{},days=Number(month.monthKey?.slice(5,7))?new Date(Number(month.monthKey.slice(0,4)),Number(month.monthKey.slice(5,7)),0).getDate():30,configured=Number(targets[key]??targets[aliases[key]])||0;return {target:Math.round((configured>0?configured:defaultDailyTarget()*days)/Math.max(1,days)),targetDefaulted:!(configured>0)}}
+function executiveDayRows(){const month=executiveView(),day=heatDayView(),source=day.rows||month.dailyRows||DATA.daily?.rows||[];return source.map(row=>({...row,...executiveTargetForDay(row.branch,month)}))}
+function executiveRegionName(name){const value=String(name||'').toLowerCase();if(/jazan|jizan|samta|abu arish|kurnish/.test(value))return 'جازان';if(/abha|asir|khamis/.test(value))return 'عسير';if(/taif/.test(value))return 'الطائف';if(/jed|jeddah|bahra|marwa|hamdania|mohamadia|samer|taysir|yaqoot/.test(value))return 'جدة';if(/makkah|shoqya|awali|zaidi|nawariyah|sharayie/.test(value))return 'مكة المكرمة';if(/dmm|dammam|khobar|saihat|ahsa|mubarraz|bqaiq|nuairiya/.test(value))return 'المنطقة الشرقية';if(/buraidah|oneza|rass|bakiria|badayea|qassiem|qassim/.test(value))return 'القصيم';if(/hail/.test(value))return 'حائل';if(/hafar/.test(value))return 'حفر الباطن';if(/wadi aldawaser|slil/.test(value))return 'وادي الدواسر والسليل';return 'الرياض'}
+function executiveRegionsForDay(rows){const month=executiveView(),regions=new Map((month.regions||[]).map(row=>[row.name,{...row,dailyRevenue:0,dailyTarget:0,acc:0}]));for(const row of rows){const name=executiveRegionName(row.branch),region=regions.get(name)||{name,branchCount:0,monthRevenue:0,monthTarget:0,branches:[],dailyRevenue:0,dailyTarget:0,acc:0};region.dailyRevenue+=Number(row.income)||0;region.dailyTarget+=Number(row.target)||0;region.acc+=Number(row.patients)||0;regions.set(name,region)}return [...regions.values()].map(row=>({...row,dailyRevenue:Math.round(row.dailyRevenue),dailyTarget:Math.round(row.dailyTarget),acc:Math.round(row.acc)})).sort((a,b)=>b.dailyRevenue-a.dailyRevenue)}
+function executiveDayMetrics(){const month=executiveView(),rows=executiveDayRows(),dailyRevenue=Math.round(rows.reduce((sum,row)=>sum+(Number(row.income)||0),0)),dailyTarget=Math.round(rows.reduce((sum,row)=>sum+(Number(row.target)||0),0)),dailyAcc=Math.round(rows.reduce((sum,row)=>sum+(Number(row.patients)||0),0));return {...(month.metrics||DATA.metrics||{}),dailyRevenue,dailyTarget,dailyAcc,dailyRate:dailyTarget?dailyRevenue/dailyTarget*100:0}}
+function paintMetrics(){
+  const m=DATA.metrics||{}, values={dailyRevenue:money(m.dailyRevenue),dailyTarget:money(m.dailyTarget),dailyRate:pct(m.dailyRate),dailyAcc:money(m.dailyAcc),monthRevenue:money(m.monthRevenue),monthTarget:money(m.monthTarget),monthRate:pct(m.monthRate),monthRemainingRate:pct(Math.max(0,100-(m.monthRate||0))),reservations:money(m.reservations)};
+  for(const [key,value] of Object.entries(values))document.querySelectorAll('[data-key="'+key+'"]').forEach(el=>el.textContent=value);
+  const executiveMetrics=executiveDayMetrics(),executiveValues={dailyRevenue:money(executiveMetrics.dailyRevenue),dailyRate:pct(executiveMetrics.dailyRate),monthRevenue:money(executiveMetrics.monthRevenue),monthRate:pct(executiveMetrics.monthRate)};
+  for(const [key,value] of Object.entries(executiveValues))document.querySelectorAll('[data-exec-key="'+key+'"]').forEach(el=>el.textContent=value);
+  const selectedDaily=dailyView().metrics||m,dailyValues={dailyRevenue:money(selectedDaily.dailyRevenue),dailyTarget:money(selectedDaily.dailyTarget),dailyRate:pct(selectedDaily.dailyRate),dailyAcc:money(selectedDaily.dailyAcc)};
+  for(const [key,value] of Object.entries(dailyValues))document.querySelectorAll('[data-daily-key="'+key+'"]').forEach(el=>el.textContent=value);
+}
+function renderTrend(){
+  const view=document.getElementById('trend');if(!view)return;
+  const month=executiveView(),rows=(month.trend||[]).map(row=>({...row,value:Number(row.value)||0}));
+  if(!month.monthKey){const raw=String(DATA.daily?.from||''),slash=raw.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-]\d{4}/),iso=raw.match(/^\d{4}-(\d{2})-(\d{2})/),day=String(slash?.[1]||iso?.[2]||new Date().getDate()).padStart(2,'0'),dailyRevenue=Number(DATA.metrics?.dailyRevenue)||0;let todayPoint=rows.find(row=>String(row.date).padStart(2,'0')===day);if(todayPoint)todayPoint.value=dailyRevenue;else rows.push({date:day,value:dailyRevenue})}
+  const visibleRows=rows.slice(-31),max=Math.max(1,...visibleRows.map(row=>row.value));
+  const gap=4,available=Math.max(260,(view.clientWidth||276)-16),width=Math.max(30,Math.floor((available-gap*Math.max(0,visibleRows.length-1))/Math.max(1,visibleRows.length)));
+  const selectedDay=String(HEAT_SELECTED_DATE||'').slice(-2);view.innerHTML=visibleRows.map(row=>{const valueLabel=row.value>=1000?Math.round(row.value/1000)+'K':money(row.value),exactLabel=money(row.value)+' ر.س',selected=String(row.date).padStart(2,'0')===selectedDay?' selected':'';return '<div class="col'+selected+'" style="--w:'+width+'px;--h:'+Math.max(3,row.value/max*180)+'px" title="يوم '+escapeHtml(row.date)+' — '+escapeHtml(exactLabel)+'" aria-label="يوم '+escapeHtml(row.date)+' '+escapeHtml(exactLabel)+'"><b>'+valueLabel+'</b><i>'+row.date+'</i></div>'}).join('');
+}
+const HEAT={scale:1,x:0,y:0,selected:-1,level:-1,pointers:new Map(),drag:null,lastDistance:0,map:null,tileLayer:null,baseLayers:null,layerControl:null,markerLayer:null,markers:[],boundsFitted:false,visibleBoundsFitted:false,tileErrors:0};
+function heatSnapshot(point){
+  const month=executiveView(),day=heatDayView(),key=normalName(point.ldmBranch),daily=(day.rows||month.dailyRows||DATA.daily?.rows||[]).find(row=>normalName(row.branch)===key),monthly=(month.monthlyRows||DATA.monthly?.rows||[]).find(row=>normalName(row.branch)===key);
+  const aliases={'home visit ruh':'home visit','home visit asir':'home visit abha','home visit jazan':'home visit jizan','al taif2':'al taif2 jed','khamis mushait asir':'khamis mushait abha','alkurnish jazan':'alkurnish jizan'},heatTargets=month.heatTargets||DATA.daily?.heatTargets||{};
+  const income=Number(daily?.income??point.income)||0,configuredDailyTarget=Number(daily?.target??point.dailyTarget)||0,dailyTarget=configuredDailyTarget>0?configuredDailyTarget:defaultDailyTarget(),monthRevenue=Number(monthly?.revenue??point.monthRevenue)||0,configuredMonthTarget=Number(monthly?.target??point.monthTarget)||0,monthTarget=configuredMonthTarget>0?configuredMonthTarget:defaultMonthlyTarget(),configuredHeatTarget=Number(heatTargets[key]??heatTargets[aliases[key]]??point.heatTarget)||0,heatTarget=configuredHeatTarget>0?configuredHeatTarget:defaultMonthlyTarget();
+  const dailyFound=Boolean(daily)||point.dailyMatched===true,monthlyFound=Boolean(monthly)||point.monthlyMatched===true,dailyTargetDefaulted=daily?.targetDefaulted===true||point.targetDefaulted===true||configuredDailyTarget<=0,monthTargetDefaulted=monthly?.targetDefaulted===true||configuredMonthTarget<=0,heatTargetDefaulted=point.heatTargetDefaulted===true||configuredHeatTarget<=0;
+  return {income,patients:Number(daily?.patients??point.patients)||0,dailyTarget,dailyRate:income/dailyTarget*100,monthRevenue,monthTarget,monthRate:monthRevenue/monthTarget*100,heatTarget,heatRate:monthRevenue/heatTarget*100,dailyFound,monthlyFound,targetAvailable:true,heatTargetAvailable:true,dailyTargetDefaulted,monthTargetDefaulted,heatTargetDefaulted};
+}
+function heatValue(point,metric){const values=heatSnapshot(point);return metric==='monthly'?values.monthRevenue:metric==='patients'?values.patients:values.income}
+function heatMetricInfo(metric){return metric==='monthly'?{label:'مبيعات الشهر',unit:'ر.س'}:metric==='patients'?{label:'عملاء ACC اليوم',unit:'عميل'}:{label:'مبيعات اليوم',unit:'ر.س'}}
+function heatAchievement(point){const values=heatSnapshot(point),metric=document.getElementById('heatMetric')?.value||'daily';if(metric==='monthly')return values.monthlyFound&&values.heatTargetAvailable?values.heatRate:null;const days=Number(executiveView().monthKey?.slice(5,7))?new Date(Number(executiveView().monthKey.slice(0,4)),Number(executiveView().monthKey.slice(5,7)),0).getDate():30,dailyHeatTarget=values.heatTarget/Math.max(1,days);return values.dailyFound&&dailyHeatTarget?values.income/dailyHeatTarget*100:null}
+function heatColor(rate){
+  if(rate===null||rate===undefined||!Number.isFinite(Number(rate)))return '#8a9691';
+  const stops=[[0,[117,13,13]],[25,[197,42,34]],[50,[238,123,33]],[70,[241,201,40]],[90,[141,205,114]],[100,[7,95,55]]],value=Math.max(0,Math.min(100,Number(rate)));
+  let left=stops[0],right=stops[stops.length-1];for(let i=1;i<stops.length;i++){if(value<=stops[i][0]){left=stops[i-1];right=stops[i];break}}
+  const t=right[0]===left[0]?0:(value-left[0])/(right[0]-left[0]),rgb=left[1].map((channel,index)=>Math.round(channel+(right[1][index]-channel)*t));return 'rgb('+rgb.join(',')+')';
+}
+function streetMarkerRadius(value,max,zoom){
+  const base=7+Math.sqrt(Math.max(0,value)/Math.max(1,max))*11,reduction=(zoom||5)>10?Math.max(.78,1-((zoom||5)-10)*.025):1;
+  return Math.max(7,Math.min(18,base*reduction));
+}
+function heatPointVisible(point){const rate=Number(heatAchievement(point)),level=Number(HEAT.level);if(level<0)return true;if(!Number.isFinite(rate))return false;if(level===0)return rate<25;if(level===1)return rate>=25&&rate<50;if(level===2)return rate>=50&&rate<70;if(level===3)return rate>=70&&rate<100;return rate>=100}
+function heatLevelLabel(){return ['الفروع المنخفضة — أقل من 25%','الفروع بين 25% و50%','الفروع بين 50% و70%','الفروع القريبة — من 70% إلى 100%','الفروع المحققة — 100% فأعلى'][Number(HEAT.level)]||'كل مستويات الفروع'}
+function setHeatLevel(value){HEAT.level=Math.max(-1,Math.min(4,Number(value)));HEAT.selected=-1;HEAT.boundsFitted=false;HEAT.visibleBoundsFitted=false;renderHeatMap()}
+function resetHeatLevel(){HEAT.level=-1;const range=document.getElementById('heatLevelRange');if(range)range.value='-1';HEAT.selected=-1;HEAT.boundsFitted=false;HEAT.visibleBoundsFitted=false;renderHeatMap()}
+function setStreetMarkerStyles(){
+  if(!HEAT.map||!HEAT.markers.length)return;
+  const metric=document.getElementById('heatMetric')?.value||'daily',points=executiveView()?.heatMap?.points||[],values=points.map(point=>heatValue(point,metric)),max=Math.max(1,...values),zoom=HEAT.map.getZoom();
+  HEAT.markers.forEach((marker,index)=>{if(!marker||!points[index])return;const selected=HEAT.selected===index,color=heatColor(heatAchievement(points[index]));marker.setStyle({radius:streetMarkerRadius(values[index],max,zoom),color:selected?'#ffffff':color,weight:selected?3.2:1.8,fillColor:color,fillOpacity:(selected?0.98:0.88)});if(selected)marker.bringToFront()});
+}
+function fitStreetMapBounds(){
+  if(!HEAT.map)return;HEAT.map.invalidateSize({pan:false});if(HEAT.visibleBoundsFitted)return;
+  const coordinates=(executiveView()?.heatMap?.points||[]).filter(point=>heatPointVisible(point)&&Number.isFinite(Number(point.lat))&&Number.isFinite(Number(point.lng))).map(point=>[Number(point.lat),Number(point.lng)]);
+  if(coordinates.length)HEAT.map.fitBounds(coordinates,{padding:[25,25],maxZoom:6});HEAT.visibleBoundsFitted=true;
+}
+function showStreetMapFallback(message){
+  const shell=document.querySelector('.heat-map-shell'),state=document.getElementById('heatMapState');if(shell)shell.classList.remove('leaflet-ready');if(state){state.hidden=false;state.textContent=message||'تعذر تحميل خريطة الطرق؛ تعمل الخريطة السعودية الاحتياطية.'}
+}
+function renderStreetHeatMap(map,values,metric,max){
+  const shell=document.querySelector('.heat-map-shell'),state=document.getElementById('heatMapState'),container=document.getElementById('heatLeaflet');if(!shell||!container)return;
+  if(!window.L){showStreetMapFallback(window.WAREED_MAP_LIBRARY_FAILED?'خريطة الطرق تحتاج اتصالًا بالإنترنت؛ تعمل الخريطة السعودية الاحتياطية.':'جارٍ تحميل خريطة الطرق…');return}
+  shell.classList.add('leaflet-ready');if(state){state.hidden=false;state.textContent='جارٍ تحميل تفاصيل الطرق والمدن…'}
+  if(!HEAT.map){
+    HEAT.map=L.map(container,{center:[23.8859,45.0792],zoom:5,minZoom:4,maxZoom:19,zoomControl:true,scrollWheelZoom:true,doubleClickZoom:true,touchZoom:true,boxZoom:true,keyboard:true,zoomSnap:.25,zoomDelta:.5,wheelPxPerZoomLevel:90,preferCanvas:true});
+    HEAT.map.createPane('wareedLabels');HEAT.map.getPane('wareedLabels').style.zIndex=350;HEAT.map.getPane('wareedLabels').style.pointerEvents='none';
+    const osmAttribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',esriAttribution='Tiles &copy; Esri';
+    const roads=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:osmAttribution});
+    const clearBase=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxNativeZoom:16,maxZoom:19,attribution:esriAttribution});
+    const clearLabels=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',{maxNativeZoom:16,maxZoom:19,pane:'wareedLabels',attribution:esriAttribution});
+    const trafficBase=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:esriAttribution});
+    const satelliteBase=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:esriAttribution});
+    const satelliteLabels=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,pane:'wareedLabels',attribution:esriAttribution});
+    const clear=L.layerGroup([clearBase,clearLabels]),traffic=L.layerGroup([trafficBase]),satellite=L.layerGroup([satelliteBase,satelliteLabels]);
+    HEAT.baseLayers={'عرض واضح للفروع':clear,'طرق ومدن':roads,'الطرق والحركة':traffic,'قمر صناعي':satellite};
+    HEAT.tileLayer=clear.addTo(HEAT.map);HEAT.layerControl=L.control.layers(HEAT.baseLayers,null,{position:'topright',collapsed:true}).addTo(HEAT.map);
+    HEAT.markerLayer=L.layerGroup().addTo(HEAT.map);
+    [roads,clearBase,clearLabels,trafficBase,satelliteBase,satelliteLabels].forEach(layer=>{
+      layer.on('tileerror',()=>{HEAT.tileErrors++;if(HEAT.tileErrors>=8)showStreetMapFallback('تعذر تحميل تفاصيل الطرق؛ تعمل الخريطة السعودية الاحتياطية.')});
+      layer.on('load',()=>{HEAT.tileErrors=0;shell.classList.add('leaflet-ready');if(state)state.hidden=true});
+    });
+    HEAT.map.on('baselayerchange',event=>{HEAT.tileLayer=event.layer;HEAT.tileErrors=0;if(state){state.hidden=false;state.textContent='جارٍ تغيير طريقة عرض الخريطة…'}setTimeout(()=>{if(state)state.hidden=true},1200)});
+    HEAT.map.on('zoomend',setStreetMarkerStyles);
+  }
+  HEAT.markerLayer.clearLayers();HEAT.markers=[];
+  map.points.forEach((point,index)=>{
+    if(!heatPointVisible(point))return;
+    const lat=Number(point.lat),lng=Number(point.lng);if(!Number.isFinite(lat)||!Number.isFinite(lng))return;
+    const value=values[index],snapshot=heatSnapshot(point),achievement=heatAchievement(point),color=heatColor(achievement),label=!snapshot.dailyFound&&metric!=='monthly'?'غير مربوط بـ Branch Income':metric==='patients'?money(value)+' عميل':money(value)+' ر.س',achievementLabel=achievement===null?'لا توجد بيانات كافية':'تحقيق الهدف: '+pctBidi(achievement)+(snapshot.heatTargetDefaulted?' ◈':''),marker=L.circleMarker([lat,lng],{radius:streetMarkerRadius(value,max,HEAT.map.getZoom()),color,weight:1.8,fillColor:color,fillOpacity:.88});
+    marker.bindTooltip('<b>'+escapeHtml(point.name)+'</b><br>'+escapeHtml(label)+'<br>'+escapeHtml(achievementLabel),{direction:'top',offset:[0,-5],opacity:.95}).on('click',()=>selectHeatPoint(index,false)).addTo(HEAT.markerLayer);HEAT.markers[index]=marker;
+  });
+  if(!HEAT.boundsFitted){const coordinates=map.points.filter(point=>heatPointVisible(point)&&Number.isFinite(Number(point.lat))&&Number.isFinite(Number(point.lng))).map(point=>[Number(point.lat),Number(point.lng)]);if(coordinates.length)HEAT.map.fitBounds(coordinates,{padding:[25,25],maxZoom:6});HEAT.boundsFitted=true}
+  setStreetMarkerStyles();setTimeout(()=>HEAT.map?.invalidateSize(),80);
+}
+function renderHeatMap(){
+  const month=executiveView(),map=month.heatMap,svg=document.getElementById('heatMapSvg'),regions=document.getElementById('heatRegions'),points=document.getElementById('heatPoints'),detail=document.getElementById('heatDetail'),source=document.getElementById('heatSource'),ranking=document.getElementById('heatRanking'),totalLabel=document.getElementById('heatTotalLabel'),totalView=document.getElementById('heatTotal'),coverage=document.getElementById('heatCoverage');
+  if(!svg||!regions||!points)return;
+  renderHeatDatePicker();
+  if(!map||!Array.isArray(map.regions)||!Array.isArray(map.points)){
+    regions.innerHTML='';points.innerHTML='';if(ranking)ranking.innerHTML='';if(source)source.textContent='الخريطة غير موجودة في هذه النسخة من البيانات.';return;
+  }
+  svg.setAttribute('viewBox',map.viewBox||'0 0 560 650');
+  regions.innerHTML=map.regions.map(row=>'<path class="heat-region" fill-rule="evenodd" d="'+escapeHtml(row.path)+'"><title>'+escapeHtml(row.province+' — '+row.name)+'</title></path>').join('');
+  const metric=document.getElementById('heatMetric')?.value||'daily',day=heatDayView(),info=heatMetricInfo(metric),values=map.points.map(point=>heatValue(point,metric)),visible=map.points.map((point,index)=>({point,index,value:values[index]})).filter(row=>heatPointVisible(row.point)),max=Math.max(1,...visible.map(row=>row.value)),mappedTotal=visible.reduce((sum,row)=>sum+row.value,0),metricTotal=metric==='monthly'?Number(month.metrics?.monthRevenue):metric==='patients'?Number(day.metrics?.dailyAcc):Number(day.metrics?.dailyRevenue),filtered=HEAT.level>=0,officialTotal=filtered?mappedTotal:(Number.isFinite(metricTotal)&&metricTotal>=0?metricTotal:mappedTotal),unlocated=filtered?0:Math.max(0,officialTotal-mappedTotal);
+  if(HEAT.selected>=0&&!visible.some(row=>row.index===HEAT.selected))HEAT.selected=-1;
+  points.innerHTML=visible.map(({point,index,value})=>{
+    const snapshot=heatSnapshot(point),ratio=value/max,achievement=heatAchievement(point),color=heatColor(achievement),radius=8+Math.sqrt(ratio)*14,label=!snapshot.dailyFound&&metric!=='monthly'?'غير مربوط بـ Branch Income':metric==='patients'?money(value)+' عميل':money(value)+' ر.س',achievementLabel=achievement===null?'لا توجد بيانات كافية':'تحقيق الهدف: '+pctBidi(achievement)+(snapshot.heatTargetDefaulted?' ◈':'');
+    return '<g class="heat-point'+(HEAT.selected===index?' selected':'')+'" data-index="'+index+'" transform="translate('+point.x+' '+point.y+')" onpointerdown="event.stopPropagation()" onclick="event.stopPropagation();selectHeatPoint('+index+',false)"><circle class="bubble" data-base-r="'+radius.toFixed(1)+'" r="'+radius.toFixed(1)+'" fill="'+color+'"></circle><title>'+escapeHtml(point.name+' — '+label+' — '+achievementLabel)+'</title></g>';
+  }).join('');
+  renderStreetHeatMap(map,values,metric,max);
+  if(totalLabel)totalLabel.textContent=(filtered?'إجمالي الفروع المعروضة — ':'إجمالي ')+info.label;if(totalView)totalView.textContent=money(officialTotal)+' '+info.unit;if(coverage)coverage.textContent='الفروع الظاهرة: '+money(visible.length)+' من '+money(map.points.length)+' • المربوط بمواقع الخريطة: '+money(mappedTotal)+' '+info.unit+(unlocated?' • غير مرتبط بموقع: '+money(unlocated)+' '+info.unit:'');
+  if(ranking)ranking.innerHTML=visible.sort((a,b)=>b.value-a.value).slice(0,12).map((row,order)=>'<button type="button" class="heat-rank'+(HEAT.selected===row.index?' active':'')+'" data-index="'+row.index+'" onclick="selectHeatPoint('+row.index+',true)"><i>'+(order+1)+'</i><span>'+escapeHtml(row.point.name)+'</span><b>'+money(row.value)+' '+info.unit+'</b></button>').join('');
+  const levelLabel=document.getElementById('heatLevelLabel'),levelCount=document.getElementById('heatLevelCount');if(levelLabel)levelLabel.textContent=heatLevelLabel();if(levelCount)levelCount.textContent='يعرض '+money(visible.length)+' من '+money(map.points.length)+' فرعًا • المؤشر حسب '+(metric==='monthly'?'تحقيق الشهر':'تحقيق اليوم المحدد');
+  if(source){const missingLocations=[...(map.unmappedLocations||[]),...(map.unmatchedLocations||[])];const newBranches=map.unmappedReportBranches||[];const missingSite=map.missingWareedWebsiteBranches||[];const missingMaps=map.missingGoogleMapsBranches||[];const mapsOnly=map.googleMapsOnlyBranches||[];source.textContent='فروع LDM الفعلية: '+money(map.ldmBranchCount||map.reportBranches||map.points.length)+' • المرسومة على الخريطة: '+money(map.mappedLocations||map.points.length)+' • الموجودة في موقع وريد: '+money(map.officialLocations||0)+' • المرتبطة ببيانات اليوم: '+money(map.dailyMatchedLocations??map.matchedLocations??0)+' • ذات هدف للخريطة: '+money(map.targetLocations||0)+' • لون الدائرة بحسب نسبة تحقيق الهدف: أحمر بعيد، أصفر متوسط، أخضر محقق، والرمادي يعني ربطًا ناقصًا'+(missingLocations.length?' • مواقع غير مربوطة: '+missingLocations.join('، '):'')+(newBranches.length?' • تنبيه: فروع LDM بلا إحداثيات: '+newBranches.join('، '):'')+(missingSite.length?' • غير موجود في موقع وريد: '+missingSite.join('، '):'')+(mapsOnly.length?' • موجود في Google Maps فقط: '+mapsOnly.join('، '):'')+(missingMaps.length?' • لا توجد له بطاقة فرع دقيقة في Google Maps ويظهر مؤقتًا حسب الحي/المدينة: '+missingMaps.join('، '):'')+'.';}
+  if(HEAT.selected>=map.points.length)HEAT.selected=-1;
+  if(HEAT.selected>=0)selectHeatPoint(HEAT.selected,false);else if(detail)detail.innerHTML='<div><b>اختر فرعًا من الخريطة</b><p>ستظهر هنا بيانات الموقع والمبيعات والعملاء.</p></div>';
+  initHeatMap();applyHeatTransform();
+}
+function selectHeatPoint(index,focus){
+  const map=executiveView()?.heatMap,point=map?.points?.[index],detail=document.getElementById('heatDetail');if(!point||!detail)return;
+  HEAT.selected=index;document.querySelectorAll('.heat-point').forEach(node=>node.classList.toggle('selected',Number(node.dataset.index)===index));
+  setStreetMarkerStyles();
+  document.querySelectorAll('.heat-rank').forEach(node=>node.classList.toggle('active',Number(node.dataset.index)===index));
+  const values=heatSnapshot(point),rate=heatAchievement(point),match=values.dailyFound?'مرتبط بـ '+point.ldmBranch:'غير مربوط بصف Branch Income؛ لا يُعد الصفر مبيعات فعلية',achievement=rate===null?'تحقيق الهدف غير محسوب حتى تكتمل البيانات':'تحقيق الهدف: '+pctBidi(rate)+(values.heatTargetDefaulted?' ◈':''),dailySales=values.dailyFound?'مبيعات اليوم: '+money(values.income)+' ر.س':'مبيعات اليوم: غير متاحة',locationNote=point.locationStatus==='approximate'?'الموقع تقريبي حسب الحي/المدينة حتى تظهر بطاقة الفرع في Google Maps':point.googleMapsFound===false?'لم تُعثر على بطاقة مؤكدة للفرع في Google Maps':point.listedOnWareedWebsite===false?'الموقع مؤكد من Google Maps وغير منشور بعد في صفحة فروع وريد':'الموقع مؤكد';
+  detail.innerHTML='<div><b>'+escapeHtml(point.name)+'</b><p>'+escapeHtml(point.address||'')+' • '+escapeHtml(dailySales)+' • '+escapeHtml(achievement)+' • ACC: '+(values.dailyFound?money(values.patients):'غير متاح')+' • مبيعات الشهر: '+(values.monthlyFound?money(values.monthRevenue)+' ر.س':'غير متاحة')+'<br>'+escapeHtml(match)+'<br>'+escapeHtml(locationNote)+'</p></div><button class="soft" onclick="openSelectedHeatMap()">فتح في Google Maps</button>';
+  if(focus)focusHeatPoint(index);
+}
+function openSelectedHeatMap(){
+  const point=executiveView()?.heatMap?.points?.[HEAT.selected];if(!point?.map)return;
+  if(window.WareedNative&&typeof WareedNative.openMap==='function')WareedNative.openMap(point.map);else window.open(point.map,'_blank','noopener');
+}
+function toggleHeatFullscreen(){
+  const shell=document.querySelector('.heat-map-shell'),button=document.getElementById('heatFullscreenButton');if(!shell)return;
+  const active=shell.classList.toggle('map-fullscreen');document.documentElement.classList.toggle('heat-fullscreen-open',active);document.body.classList.toggle('heat-fullscreen-open',active);
+  if(button){button.textContent=active?'×':'⛶';button.title=active?'إغلاق ملء الشاشة':'ملء الشاشة';button.setAttribute('aria-label',button.title)}
+  setTimeout(()=>{if(HEAT.map)HEAT.map.invalidateSize({pan:false});else applyHeatTransform()},100);
+}
+function clampHeatPan(){const width=560,height=650;HEAT.x=Math.max(width*(1-HEAT.scale),Math.min(0,HEAT.x));HEAT.y=Math.max(height*(1-HEAT.scale),Math.min(0,HEAT.y))}
+function applyHeatTransform(){clampHeatPan();const view=document.getElementById('heatViewport');if(view)view.setAttribute('transform','translate('+HEAT.x.toFixed(2)+' '+HEAT.y.toFixed(2)+') scale('+HEAT.scale.toFixed(3)+')');const divisor=Math.pow(HEAT.scale,.34);document.querySelectorAll('.heat-point .bubble').forEach(circle=>circle.setAttribute('r',Math.max(5,Number(circle.dataset.baseR||7)/divisor).toFixed(2)))}
+function zoomHeatAt(factor,x=280,y=325){const old=HEAT.scale,next=Math.max(1,Math.min(5,old*factor)),ratio=next/old;HEAT.x=x-(x-HEAT.x)*ratio;HEAT.y=y-(y-HEAT.y)*ratio;HEAT.scale=next;applyHeatTransform()}
+function setHeatZoom(factor){if(HEAT.map&&document.querySelector('.heat-map-shell')?.classList.contains('leaflet-ready')){factor>1?HEAT.map.zoomIn():HEAT.map.zoomOut();return}zoomHeatAt(factor)}
+function resetHeatZoom(){if(HEAT.map&&document.querySelector('.heat-map-shell')?.classList.contains('leaflet-ready')){const points=executiveView()?.heatMap?.points||[],coordinates=points.filter(point=>heatPointVisible(point)&&Number.isFinite(Number(point.lat))&&Number.isFinite(Number(point.lng))).map(point=>[Number(point.lat),Number(point.lng)]);if(coordinates.length)HEAT.map.fitBounds(coordinates,{padding:[25,25],maxZoom:6});return}HEAT.scale=1;HEAT.x=0;HEAT.y=0;applyHeatTransform()}
+function focusHeatPoint(index){const point=executiveView()?.heatMap?.points?.[index];if(!point)return;if(HEAT.map&&document.querySelector('.heat-map-shell')?.classList.contains('leaflet-ready')&&Number.isFinite(Number(point.lat))&&Number.isFinite(Number(point.lng))){HEAT.map.flyTo([Number(point.lat),Number(point.lng)],Math.max(14,HEAT.map.getZoom()),{animate:true,duration:.75});HEAT.markers[index]?.openTooltip();return}HEAT.scale=Math.max(2.2,HEAT.scale);HEAT.x=280-Number(point.x)*HEAT.scale;HEAT.y=325-Number(point.y)*HEAT.scale;applyHeatTransform()}
+function heatRootPoint(svg,clientX,clientY){const point=svg.createSVGPoint();point.x=clientX;point.y=clientY;return point.matrixTransform(svg.getScreenCTM().inverse())}
+function initHeatMap(){
+  const svg=document.getElementById('heatMapSvg');if(!svg||svg.dataset.ready)return;svg.dataset.ready='1';
+  svg.addEventListener('wheel',event=>{event.preventDefault();const point=heatRootPoint(svg,event.clientX,event.clientY);zoomHeatAt(event.deltaY<0?1.16:.86,point.x,point.y)},{passive:false});
+  svg.addEventListener('pointerdown',event=>{svg.setPointerCapture(event.pointerId);HEAT.pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});const point=heatRootPoint(svg,event.clientX,event.clientY);HEAT.drag={point,x:HEAT.x,y:HEAT.y};svg.classList.add('dragging');if(HEAT.pointers.size===2){const rows=[...HEAT.pointers.values()];HEAT.lastDistance=Math.hypot(rows[0].x-rows[1].x,rows[0].y-rows[1].y)}});
+  svg.addEventListener('pointermove',event=>{if(!HEAT.pointers.has(event.pointerId))return;HEAT.pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});if(HEAT.pointers.size>=2){const rows=[...HEAT.pointers.values()],distance=Math.hypot(rows[0].x-rows[1].x,rows[0].y-rows[1].y),center=heatRootPoint(svg,(rows[0].x+rows[1].x)/2,(rows[0].y+rows[1].y)/2);if(HEAT.lastDistance)zoomHeatAt(distance/HEAT.lastDistance,center.x,center.y);HEAT.lastDistance=distance;return}if(HEAT.drag&&HEAT.scale>1){const point=heatRootPoint(svg,event.clientX,event.clientY);HEAT.x=HEAT.drag.x+point.x-HEAT.drag.point.x;HEAT.y=HEAT.drag.y+point.y-HEAT.drag.point.y;applyHeatTransform()}});
+  const end=event=>{HEAT.pointers.delete(event.pointerId);HEAT.lastDistance=0;HEAT.drag=null;if(!HEAT.pointers.size)svg.classList.remove('dragging')};svg.addEventListener('pointerup',end);svg.addEventListener('pointercancel',end);
+}
+function renderExecutive(){
+  const view=executiveView(),day=heatDayView(),rows=executiveDayRows(),dayLabel=day.label||String(HEAT_SELECTED_DATE||'').split('-').reverse().join('/');renderExecutiveMonthPicker();
+  const regions=document.getElementById('executiveRegions'),branches=document.getElementById('executiveBranches');
+  if(regions)regions.innerHTML=executiveRegionsForDay(rows).map(row=>'<tr><td class="branch">'+escapeHtml(row.name)+'</td><td>'+money(row.branchCount??row.branches?.length??0)+'</td><td>'+money(row.dailyRevenue??row.revenue)+'</td><td>'+money(row.dailyTarget||0)+'</td><td>'+money(row.monthRevenue||0)+'</td><td>'+money(row.monthTarget??row.target)+'</td><td>'+money(row.acc)+'</td></tr>').join('');
+  if(branches)branches.innerHTML=[...rows].sort((a,b)=>(Number(b.income)||0)-(Number(a.income)||0)).slice(0,10).map(row=>'<tr><td class="branch">'+escapeHtml(row.branch)+'</td><td>'+money(row.income)+'</td><td>'+money(row.patients)+'</td><td>'+money(row.target)+targetDefaultMark(row.targetDefaulted)+'</td></tr>').join('');
+  const selectedText=dayLabel?'يوم '+dayLabel:'اليوم المختار';for(const id of ['executiveSelectedDay']){const element=document.getElementById(id);if(element)element.textContent=selectedText}const revenueLabel=document.getElementById('executiveDailyRevenueLabel'),rateLabel=document.getElementById('executiveDailyRateLabel'),regionsTitle=document.getElementById('executiveRegionsTitle'),branchesTitle=document.getElementById('executiveBranchesTitle');if(revenueLabel)revenueLabel.textContent='مبيعات '+selectedText;if(rateLabel)rateLabel.textContent='تحقيق '+selectedText;if(regionsTitle)regionsTitle.textContent='ملخص المدن والمناطق — '+selectedText;if(branchesTitle)branchesTitle.textContent='أعلى الفروع — '+selectedText;
+  renderHeatMap();
+}
+function reportStamp(value){
+  if(!value)return '—';
+  const text=String(value).trim(),match=text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[,\s]+(\d{1,2}):(\d{2})(?:\s*([AP]M))?)?/i);
+  if(match){let hour=Number(match[4]||0),suffix=String(match[6]||'').toUpperCase();if(suffix==='PM'&&hour<12)hour+=12;if(suffix==='AM'&&hour===12)hour=0;return String(match[1]).padStart(2,'0')+'/'+String(match[2]).padStart(2,'0')+'/'+match[3]+' '+String(hour).padStart(2,'0')+':'+String(match[5]||'00').padStart(2,'0')}
+  const date=new Date(value);if(Number.isNaN(date.getTime()))return text;
+  return new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Riyadh',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).format(date).replace(',','');
+}
+function filtered(source,inputId,sortId){
+  const query=(document.getElementById(inputId)?.value||'').toLowerCase(), sort=document.getElementById(sortId)?.value;
+  const rows=source.filter(row=>String(row.branch||row.name||'').toLowerCase().includes(query));
+  rows.sort((a,b)=>sort==='branch'||sort==='name'?String(a.branch||a.name).localeCompare(String(b.branch||b.name)):Number(b[sort]||0)-Number(a[sort]||0));
+  return rows;
+}
+function sortableCellValue(cell){
+  const text=String(cell?.textContent||'').replace(/[\u2066-\u2069]/g,'').trim(),numeric=text.replace(/,/g,'').replace(/%/g,'').replace(/ر\.س|عميل/g,'').trim();
+  if(/^[-+]?\d+(?:\.\d+)?$/.test(numeric))return {type:'number',value:Number(numeric)};
+  const date=text.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})/);if(date)return {type:'number',value:Number(date[3]+String(date[2]).padStart(2,'0')+String(date[1]).padStart(2,'0'))};
+  return {type:'text',value:text.toLocaleLowerCase('ar')};
+}
+function sortDashboardTable(table,column){
+  const headers=[...table.tHead?.querySelectorAll('th')||[]],header=headers.find(th=>th.cellIndex===column)||headers[column];if(!header)return;
+  const direction=header.classList.contains('sort-asc')?'desc':'asc';headers.forEach(th=>th.classList.remove('sort-asc','sort-desc'));header.classList.add('sort-'+direction);
+  const rows=[...table.tBodies[0]?.rows||[]];rows.sort((a,b)=>{const left=sortableCellValue(a.cells[column]),right=sortableCellValue(b.cells[column]);let result=left.type==='number'&&right.type==='number'?left.value-right.value:String(left.value).localeCompare(String(right.value),'ar',{numeric:true,sensitivity:'base'});return direction==='asc'?result:-result});
+  rows.forEach(row=>table.tBodies[0].appendChild(row));
+}
+function enableTableSorting(){
+  document.querySelectorAll('.data-table').forEach(table=>table.querySelectorAll('thead th').forEach(header=>{if(header.colSpan>1||header.dataset.sortReady)return;header.dataset.sortReady='1';header.classList.add('table-sortable');header.tabIndex=0;header.title='اضغط للترتيب';const activate=()=>sortDashboardTable(table,header.cellIndex);header.addEventListener('click',activate);header.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();activate()}})}));
+}
+function rateClass(value){return value>=100?'good':value>=80?'warn':'bad'}
+function renderDaily(){
+  renderDailyDatePicker();const view=dailyView(),rows=filtered([...(view.rows||[])],'dailyFilter','dailySort');
+  document.getElementById('dailyRows').innerHTML=rows.map(row=>'<tr><td class="branch">'+row.branch+'</td><td>'+money(row.patients)+'</td><td>'+money(row.income)+'</td><td>'+money(row.target)+targetDefaultMark(row.targetDefaulted)+'</td><td class="'+rateClass(row.rate)+'">'+pct(row.rate)+'</td><td class="'+(row.remaining?'bad':'good')+'">'+money(row.remaining)+'</td></tr>').join('');
+  updateDailyHeader();
+}
+function renderMonthly(){
+  const rows=filtered([...(DATA.monthly?.rows||[])],'monthFilter','monthSort');
+  document.getElementById('monthlyRows').innerHTML=rows.map(row=>'<tr><td class="branch">'+row.branch+'</td><td>'+money(row.revenue)+'</td><td>'+money(row.target)+targetDefaultMark(row.targetDefaulted)+'</td><td class="'+rateClass(row.rate)+'">'+pct(row.rate)+'</td><td class="'+(row.remaining?'bad':'good')+'">'+money(row.remaining)+'</td><td>'+pct(row.remainingRate)+'</td></tr>').join('');
+}
+const COMPARE_STATE={sales:{current:'',reference:''},reservations:{current:'',reference:''}};
+let SALES_COMPARE_TABLE_ROWS=[],RESERVATION_BRANCH_COMPARE_ROWS=[],RESERVATION_EMPLOYEE_COMPARE_ROWS=[];
+function comparisonRows(kind){return Array.isArray(DATA.comparisons?.[kind])?[...DATA.comparisons[kind]].sort((a,b)=>(a.date+' '+a.time).localeCompare(b.date+' '+b.time)):[]}
+function comparePrefix(kind){return kind==='sales'?'sales':'reservation'}
+function compareTimeMinutes(value){const parts=String(value||'00:00').split(':');return (Number(parts[0])||0)*60+(Number(parts[1])||0)}
+function shiftCompareDate(value,days){const date=new Date(String(value)+'T12:00:00Z');date.setUTCDate(date.getUTCDate()+days);return date.toISOString().slice(0,10)}
+function closestCompareSnapshot(rows,date,time){return rows.filter(row=>row.date===date).sort((a,b)=>Math.abs(compareTimeMinutes(a.time)-compareTimeMinutes(time))-Math.abs(compareTimeMinutes(b.time)-compareTimeMinutes(time)))[0]||null}
+function comparisonLabel(row){return row?.label||((row?.date||'')+' '+(row?.time||''))}
+function shortComparisonDate(value){const parts=String(value||'').split('-');return parts.length===3?parts[2]+'/'+parts[1]+'/'+parts[0]:String(value||'')}
+function comparisonDayGap(currentDate,referenceDate){const current=Date.parse(String(currentDate||'')+'T00:00:00Z'),reference=Date.parse(String(referenceDate||'')+'T00:00:00Z');return Number.isFinite(current)&&Number.isFinite(reference)?Math.round((current-reference)/86400000):null}
+function comparisonWords(kind,current,reference){
+  const rows=comparisonRows(kind),latestDate=rows[rows.length-1]?.date||current.date,isLatest=current.date===latestDate,gap=comparisonDayGap(current.date,reference.date),currentShort=isLatest?'اليوم':'يوم '+shortComparisonDate(current.date);let referenceShort='يوم '+shortComparisonDate(reference.date);
+  if(gap===0)referenceShort='نفس اليوم';else if(gap===1)referenceShort=isLatest?'أمس':'اليوم السابق';else if(gap===7)referenceShort=isLatest?'نفس اليوم الأسبوع الماضي':'قبل أسبوع';
+  return {currentShort,referenceShort,current:currentShort+' حتى '+String(current.time||'—'),reference:referenceShort+' حتى '+String(reference.time||'—')};
+}
+function setComparisonWords(kind,words){
+  const labels=kind==='sales'?{
+    salesCompareCurrentLegend:words.current,salesCompareReferenceLegend:words.reference,salesCurrentHeader:'المبيعات — '+words.currentShort,salesReferenceHeader:'المبيعات — '+words.referenceShort,salesCurrentAccHeader:'العملاء — '+words.currentShort,salesReferenceAccHeader:'العملاء — '+words.referenceShort
+  }:{
+    reservationCompareCurrentLegend:words.current,reservationCompareReferenceLegend:words.reference,reservationSourceCurrentLegend:words.current,reservationSourceReferenceLegend:words.reference,reservationBranchCurrentHeader:words.currentShort,reservationBranchReferenceHeader:words.referenceShort,reservationEmployeeCurrentHeader:words.currentShort,reservationEmployeeReferenceHeader:words.referenceShort,reservationBranchIndoorHeader:'زيارة فرع — '+words.currentShort,reservationBranchOutdoorHeader:'زيارة منزلية — '+words.currentShort,reservationEmployeeIndoorHeader:'زيارة فرع — '+words.currentShort,reservationEmployeeOutdoorHeader:'زيارة منزلية — '+words.currentShort
+  };
+  for(const [id,label] of Object.entries(labels)){const element=document.getElementById(id);if(element)element.textContent=label}
+}
+function comparisonCandidates(rows,current){
+  const result=[],seen=new Set(),add=row=>{if(row&&row.id!==current.id&&!seen.has(row.id)){seen.add(row.id);result.push(row)}};
+  [...new Set(rows.map(row=>row.date))].filter(date=>date!==current.date).sort().reverse().forEach(date=>add(closestCompareSnapshot(rows,date,current.time)));
+  rows.filter(row=>row.date===current.date&&(row.date+' '+row.time)<(current.date+' '+current.time)).slice(-4).reverse().forEach(add);
+  if(COMPARE_STATE[current.id?.startsWith('sales|')?'sales':'reservations']?.reference)add(rows.find(row=>row.id===COMPARE_STATE[current.id.startsWith('sales|')?'sales':'reservations'].reference));
+  return result;
+}
+function compareOption(row,current){const diff=current?Math.abs(compareTimeMinutes(row.time)-compareTimeMinutes(current.time)):0;return '<option value="'+escapeHtml(row.id)+'">'+escapeHtml(comparisonLabel(row))+(current&&row.date!==current.date?' • فرق '+diff+' د':'')+'</option>'}
+function prepareComparison(kind){
+  const rows=comparisonRows(kind),prefix=comparePrefix(kind);if(!rows.length)return null;
+  let current=rows.find(row=>row.id===COMPARE_STATE[kind].current)||rows[rows.length-1];COMPARE_STATE[kind].current=current.id;
+  let reference=rows.find(row=>row.id===COMPARE_STATE[kind].reference);
+  if(!reference||reference.id===current.id){reference=closestCompareSnapshot(rows,shiftCompareDate(current.date,-1),current.time)||rows[rows.findIndex(row=>row.id===current.id)-1]||null;COMPARE_STATE[kind].reference=reference?.id||''}
+  const diff=reference?Math.abs(compareTimeMinutes(current.time)-compareTimeMinutes(reference.time)):0,match=document.getElementById(prefix+'CompareMatch'),words=reference?comparisonWords(kind,current,reference):null,vatNote=reference?.source==='VAT'?' • بيانات اليوم السابق محسوبة من VAT من بداية اليوم حتى نفس الوقت':'';
+  if(match)match.innerHTML=reference?'<b>'+(diff===0?'نفس الوقت تمامًا':diff<=15?'الوقتان متقاربان':'تنبيه: الوقتان غير متقاربين')+'</b><span>'+escapeHtml(words.current)+' مقابل '+escapeHtml(words.reference)+' • فرق الوقت '+diff+' دقيقة'+escapeHtml(vatNote)+'</span>':'لا يوجد يوم آخر محفوظ للمقارنة';
+  return reference?{current,reference,timeDifference:diff,words}:null;
+}
+function comparisonPickerId(prefix,side,part){return prefix+'Compare'+(side==='current'?'Current':'Reference')+(part==='date'?'Date':'Time')}
+function populateComparisonTimes(kind,prefix,side,preferredTime){
+  const rows=comparisonRows(kind),dateSelect=document.getElementById(comparisonPickerId(prefix,side,'date')),timeSelect=document.getElementById(comparisonPickerId(prefix,side,'time'));if(!dateSelect||!timeSelect)return;
+  const date=dateSelect.value,times=rows.filter(row=>row.date===date).map(row=>row.time).sort().reverse(),previous=preferredTime||timeSelect.value;timeSelect.innerHTML=times.length?times.map(time=>'<option value="'+time+'">'+time+'</option>').join(''):'<option value="">لا يوجد وقت محفوظ</option>';if(times.includes(previous))timeSelect.value=previous;
+}
+function populateComparisonPicker(kind,prefix,pair){
+  const rows=comparisonRows(kind);if(!rows.length)return;const dates=[...new Set(rows.map(row=>row.date))].sort().reverse(),dateOptions=dates.map(date=>'<option value="'+date+'">'+date.split('-').reverse().join('/')+'</option>').join('');
+  for(const side of ['current','reference']){const snapshot=pair?.[side],dateSelect=document.getElementById(comparisonPickerId(prefix,side,'date'));if(!dateSelect)continue;dateSelect.innerHTML=dateOptions;if(snapshot&&dates.includes(snapshot.date))dateSelect.value=snapshot.date;populateComparisonTimes(kind,prefix,side,snapshot?.time)}
+}
+function applySplitComparison(kind,prefix){
+  const rows=comparisonRows(kind),find=side=>{const date=document.getElementById(comparisonPickerId(prefix,side,'date'))?.value,time=document.getElementById(comparisonPickerId(prefix,side,'time'))?.value;return rows.find(row=>row.date===date&&row.time===time)};const current=find('current'),reference=find('reference');
+  if(!current||!reference){toast('اختر تاريخًا ووقتًا متاحين لليومين');return false}if(current.id===reference.id){toast('اختر يومين أو وقتين مختلفين');return false}COMPARE_STATE[kind]={current:current.id,reference:reference.id};kind==='sales'?renderSalesComparison():renderReservationComparison();return true;
+}
+function comparisonReportTypeChanged(kind){const pair=prepareComparison(kind);populateComparisonPicker(kind,'center',pair);const area=document.getElementById('salesComparisonResultArea');if(area)area.hidden=kind!=='sales';const match=document.getElementById('salesCompareMatch');if(kind==='reservations'&&match)match.innerHTML='<b>تقرير الحجوزات</b><span>اختر اليوم الأول واليوم الذي تريد المقارنة معه، ثم اضغط «اعرض النتيجة».</span>';if(kind==='sales')renderSalesComparison()}
+function showCenterComparison(){const kind=document.getElementById('comparisonReportType')?.value||'sales';if(!applySplitComparison(kind,'center'))return;if(kind==='reservations'){go('reservations');setTimeout(()=>document.getElementById('reservationComparison')?.scrollIntoView({behavior:'smooth',block:'start'}),120)}else{const area=document.getElementById('salesComparisonResultArea');if(area)area.hidden=false}}
+function quickCompareFromCenter(mode){const kind=document.getElementById('comparisonReportType')?.value||'sales';quickCompare(kind,mode);const pair=prepareComparison(kind);populateComparisonPicker(kind,'center',pair);if(kind==='reservations'){go('reservations');setTimeout(()=>document.getElementById('reservationComparison')?.scrollIntoView({behavior:'smooth',block:'start'}),120)}}
+function quickCompare(kind,mode){
+  const rows=comparisonRows(kind);if(!rows.length)return;let current=rows.find(row=>row.id===COMPARE_STATE[kind].current)||rows[rows.length-1],reference=null;
+  if(mode==='previousDay')reference=closestCompareSnapshot(rows,shiftCompareDate(current.date,-1),current.time);
+  if(mode==='lastWeek')reference=closestCompareSnapshot(rows,shiftCompareDate(current.date,-7),current.time);
+  if(mode==='previousSnapshot'){const index=rows.findIndex(row=>row.id===current.id);reference=index>0?rows[index-1]:null}
+  if(!reference){toast('لا توجد لقطة محفوظة لهذه الفترة');return}COMPARE_STATE[kind].reference=reference.id;kind==='sales'?renderSalesComparison():renderReservationComparison();
+}
+function compareDelta(current,reference){return Number(current||0)-Number(reference||0)}
+function comparePercent(current,reference){const base=Number(reference)||0;return base?compareDelta(current,reference)/base*100:null}
+function compareClass(delta){return delta>0?'up':delta<0?'down':'neutral'}
+function signedMoney(value){const numberValue=Math.round(Number(value)||0);return (numberValue>0?'+':'')+money(numberValue)}
+function signedPercent(value){return value===null?'جديد':((value>0?'+':'')+(Number(value)||0).toFixed(1)+'%')}
+function easyDifference(delta,change,formatter=money){const amount=formatter(Math.abs(Number(delta)||0)),percentage=change===null?'':' ('+Math.abs(Number(change)||0).toFixed(1)+'%)';return delta>0?'أعلى بـ '+amount+percentage:delta<0?'أقل بـ '+amount+percentage:'نفس الرقم تمامًا'}
+function compareKpi(title,current,reference,formatter=money,words={current:'اليوم',reference:'أمس'}){const delta=compareDelta(current,reference),change=comparePercent(current,reference),type=compareClass(delta);return '<article class="compare-kpi '+type+'"><span>'+escapeHtml(title+' — '+words.current)+'</span><b>'+formatter(current)+'</b><small>'+escapeHtml(words.reference)+': '+formatter(reference)+' • '+easyDifference(delta,change,formatter)+'</small></article>'}
+function summaryCompareKpi(title,value,detail,delta){return '<article class="compare-kpi '+compareClass(delta)+'"><span>'+escapeHtml(title)+'</span><b>'+escapeHtml(value)+'</b><small>'+escapeHtml(detail)+'</small></article>'}
+function pairChart(elementId,items){const view=document.getElementById(elementId);if(!view)return;view.innerHTML=items.map(item=>{const max=Math.max(1,Number(item.current)||0,Number(item.reference)||0),current=Math.max(0,Number(item.current)||0),reference=Math.max(0,Number(item.reference)||0),delta=current-reference;return '<div class="pair-row"><div class="pair-label"><b>'+escapeHtml(item.label)+'</b><small>'+easyDifference(delta,comparePercent(current,reference),money)+'</small></div><div class="pair-tracks"><div class="pair-track current"><i style="width:'+Math.max(current?4:0,current/max*100).toFixed(1)+'%">'+money(current)+'</i></div><div class="pair-track reference"><i style="width:'+Math.max(reference?4:0,reference/max*100).toFixed(1)+'%">'+money(reference)+'</i></div></div></div>'}).join('')}
+function swingChart(elementId,rows){const view=document.getElementById(elementId);if(!view)return;const points=[...rows].sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta)).slice(0,10),max=Math.max(1,...points.map(row=>Math.abs(row.delta)));view.innerHTML=points.length?points.map(row=>{const width=Math.max(2,Math.abs(row.delta)/max*50),type=row.delta>=0?'positive':'negative',side=row.delta>=0?'left:50%':'right:50%';return '<div class="swing-row"><span title="'+escapeHtml(row.name)+'">'+escapeHtml(row.name)+'</span><div class="swing-track"><i class="'+type+'" style="width:'+width.toFixed(1)+'%;'+side+'"></i></div><b class="'+compareClass(row.delta)+'">'+signedMoney(row.delta)+'</b></div>'}).join(''):'<div class="compare-empty">لا توجد فروقات لعرضها</div>'}
+function mergeSalesBranches(current,reference){const map=new Map();for(const row of reference.branches||[])map.set(normalName(row.name),{name:row.name,referenceIncome:Number(row.income)||0,referencePatients:Number(row.patients)||0,currentIncome:0,currentPatients:0});for(const row of current.branches||[]){const key=normalName(row.name),item=map.get(key)||{name:row.name,referenceIncome:0,referencePatients:0,currentIncome:0,currentPatients:0};item.name=row.name;item.currentIncome=Number(row.income)||0;item.currentPatients=Number(row.patients)||0;map.set(key,item)}return [...map.values()].map(row=>({...row,delta:row.currentIncome-row.referenceIncome,percent:comparePercent(row.currentIncome,row.referenceIncome),patientDelta:row.currentPatients-row.referencePatients}))}
+function renderSalesComparison(){
+  const pair=prepareComparison('sales'),kpis=document.getElementById('salesCompareKpis'),insights=document.getElementById('salesCompareInsights');if(!pair){if(kpis)kpis.innerHTML='<div class="compare-empty">لا توجد لقطات مبيعات تاريخية</div>';return}
+  if((document.getElementById('comparisonReportType')?.value||'sales')==='sales')populateComparisonPicker('sales','center',pair);
+  const current=pair.current,reference=pair.reference,words=pair.words,averageCurrent=current.totalPatients?current.totalIncome/current.totalPatients:0,averageReference=reference.totalPatients?reference.totalIncome/reference.totalPatients:0;setComparisonWords('sales',words);SALES_COMPARE_TABLE_ROWS=mergeSalesBranches(current,reference);
+  const improved=SALES_COMPARE_TABLE_ROWS.filter(row=>row.delta>0).length,declined=SALES_COMPARE_TABLE_ROWS.filter(row=>row.delta<0).length,largestGain=[...SALES_COMPARE_TABLE_ROWS].sort((a,b)=>b.delta-a.delta)[0],largestLoss=[...SALES_COMPARE_TABLE_ROWS].sort((a,b)=>a.delta-b.delta)[0],totalDelta=current.totalIncome-reference.totalIncome;
+  const salesChange=comparePercent(current.totalIncome,reference.totalIncome),salesResult=easyDifference(totalDelta,salesChange,money);
+  kpis.innerHTML=compareKpi('المبيعات',current.totalIncome,reference.totalIncome,money,words)+compareKpi('عدد العملاء',current.totalPatients,reference.totalPatients,money,words)+compareKpi('متوسط قيمة العميل',averageCurrent,averageReference,money,words)+summaryCompareKpi('الفروع التي تحسنت / انخفضت',improved+' / '+declined,improved+' فرع تحسن، '+declined+' فرع انخفض',improved-declined)+summaryCompareKpi('النتيجة النهائية',salesResult,words.current+' مقارنة بـ '+words.reference,totalDelta);
+  insights.innerHTML='<strong>'+(totalDelta>=0?'↗':'↘')+'</strong><div><h3>'+escapeHtml(words.currentShort)+' '+(totalDelta>=0?'أفضل من ':'أقل من ')+escapeHtml(words.referenceShort)+'</h3><p>'+escapeHtml(words.current)+': <b>'+money(current.totalIncome)+' ر.س</b>، و'+escapeHtml(words.reference)+': <b>'+money(reference.totalIncome)+' ر.س</b>. النتيجة: '+salesResult+'. تحسن '+improved+' فرعًا وانخفض '+declined+' فرعًا. أفضل تحسن: '+escapeHtml(largestGain?.name||'—')+' بمقدار '+money(Math.abs(largestGain?.delta||0))+' ر.س، وأكبر انخفاض: '+escapeHtml(largestLoss?.name||'—')+' بمقدار '+money(Math.abs(largestLoss?.delta||0))+' ر.س.</p></div>';
+  pairChart('salesCompareOverall',[{label:'المبيعات',current:current.totalIncome,reference:reference.totalIncome},{label:'عملاء ACC',current:current.totalPatients,reference:reference.totalPatients},{label:'متوسط العميل',current:averageCurrent,reference:averageReference}]);swingChart('salesCompareSwing',SALES_COMPARE_TABLE_ROWS);renderSalesComparisonTable();
+}
+function renderSalesComparisonTable(){const body=document.getElementById('salesCompareRows');if(!body)return;const query=String(document.getElementById('salesCompareFilter')?.value||'').toLowerCase(),sort=document.getElementById('salesCompareSort')?.value||'gain';let rows=SALES_COMPARE_TABLE_ROWS.filter(row=>row.name.toLowerCase().includes(query));rows.sort((a,b)=>sort==='name'?a.name.localeCompare(b.name):sort==='loss'?a.delta-b.delta:sort==='current'?b.currentIncome-a.currentIncome:b.delta-a.delta);document.getElementById('salesCompareCount').textContent=rows.length+' فرع';body.innerHTML=rows.map(row=>'<tr><td class="branch">'+escapeHtml(row.name)+'</td><td>'+money(row.currentIncome)+'</td><td>'+money(row.referenceIncome)+'</td><td class="'+compareClass(row.delta)+'">'+signedMoney(row.delta)+'</td><td><span class="delta-chip '+compareClass(row.delta)+'">'+signedPercent(row.percent)+'</span></td><td>'+money(row.currentPatients)+'</td><td>'+money(row.referencePatients)+'</td><td class="'+compareClass(row.patientDelta)+'">'+signedMoney(row.patientDelta)+'</td></tr>').join('')}
+function reservationSourceValue(snapshot,key,metric='total'){return Number(snapshot.sources?.[key]?.[metric])||0}
+function mergeReservationEntities(currentRows,referenceRows,type){const map=new Map(),keyFor=row=>type==='employee'?(row.group+'|'+normalName(row.name)):normalName(row.name);for(const row of referenceRows||[])map.set(keyFor(row),{name:row.name,group:row.group||'branches',branch:row.branch||'',reference:Number(row.total)||0,referenceIndoor:Number(row.indoor)||0,referenceOutdoor:Number(row.outdoor)||0,current:0,currentIndoor:0,currentOutdoor:0});for(const row of currentRows||[]){const key=keyFor(row),item=map.get(key)||{name:row.name,group:row.group||'branches',branch:row.branch||'',reference:0,referenceIndoor:0,referenceOutdoor:0,current:0,currentIndoor:0,currentOutdoor:0};item.name=row.name;item.group=row.group||item.group;item.branch=row.branch||item.branch;item.current=Number(row.total)||0;item.currentIndoor=Number(row.indoor)||0;item.currentOutdoor=Number(row.outdoor)||0;map.set(key,item)}return [...map.values()].map(row=>({...row,delta:row.current-row.reference,percent:comparePercent(row.current,row.reference)}))}
+function renderReservationComparison(){
+  const pair=prepareComparison('reservations'),kpis=document.getElementById('reservationCompareKpis'),insights=document.getElementById('reservationCompareInsights');if(!pair){if(kpis)kpis.innerHTML='<div class="compare-empty">لا توجد لقطات حجوزات تاريخية</div>';return}
+  populateComparisonPicker('reservations','reservation',pair);if(document.getElementById('comparisonReportType')?.value==='reservations')populateComparisonPicker('reservations','center',pair);
+  const current=pair.current,reference=pair.reference,words=pair.words,callCurrent=reservationSourceValue(current,'callCenter'),callReference=reservationSourceValue(reference,'callCenter'),branchCurrent=reservationSourceValue(current,'branches'),branchReference=reservationSourceValue(reference,'branches'),mobileCurrent=reservationSourceValue(current,'mobile'),mobileReference=reservationSourceValue(reference,'mobile');setComparisonWords('reservations',words);RESERVATION_BRANCH_COMPARE_ROWS=mergeReservationEntities(current.branches,reference.branches,'branch');RESERVATION_EMPLOYEE_COMPARE_ROWS=mergeReservationEntities(current.employees,reference.employees,'employee');
+  const totalDelta=current.total-reference.total,improved=RESERVATION_BRANCH_COMPARE_ROWS.filter(row=>row.delta>0).length,declined=RESERVATION_BRANCH_COMPARE_ROWS.filter(row=>row.delta<0).length,largestGain=[...RESERVATION_BRANCH_COMPARE_ROWS].sort((a,b)=>b.delta-a.delta)[0],largestLoss=[...RESERVATION_BRANCH_COMPARE_ROWS].sort((a,b)=>a.delta-b.delta)[0];
+  const reservationChange=comparePercent(current.total,reference.total),reservationResult=easyDifference(totalDelta,reservationChange,money);
+  kpis.innerHTML=compareKpi('كل الحجوزات',current.total,reference.total,money,words)+compareKpi('زيارات الفروع (Indoor)',current.indoor,reference.indoor,money,words)+compareKpi('الزيارات المنزلية (Outdoor)',current.outdoor,reference.outdoor,money,words)+compareKpi('حجوزات خدمة العملاء',callCurrent,callReference,money,words)+compareKpi('حجوزات موظفي الفروع',branchCurrent,branchReference,money,words)+compareKpi('حجوزات تطبيق Wareed Mobile',mobileCurrent,mobileReference,money,words);
+  insights.innerHTML='<strong>'+(totalDelta>=0?'↗':'↘')+'</strong><div><h3>'+escapeHtml(words.currentShort)+' '+(totalDelta>=0?'أفضل من ':'أقل من ')+escapeHtml(words.referenceShort)+'</h3><p>'+escapeHtml(words.current)+': <b>'+money(current.total)+' حجز</b>، و'+escapeHtml(words.reference)+': <b>'+money(reference.total)+' حجز</b>. النتيجة: '+reservationResult+'. تحسن '+improved+' فرعًا وانخفض '+declined+' فرعًا. أفضل تحسن: '+escapeHtml(largestGain?.name||'—')+' بمقدار '+money(Math.abs(largestGain?.delta||0))+' حجز، وأكبر انخفاض: '+escapeHtml(largestLoss?.name||'—')+' بمقدار '+money(Math.abs(largestLoss?.delta||0))+' حجز.</p></div>';
+  pairChart('reservationCompareModes',[{label:'إجمالي الحجوزات',current:current.total,reference:reference.total},{label:'Indoor',current:current.indoor,reference:reference.indoor},{label:'Outdoor',current:current.outdoor,reference:reference.outdoor}]);pairChart('reservationCompareSources',[{label:'خدمة العملاء',current:callCurrent,reference:callReference},{label:'موظفو الفروع',current:branchCurrent,reference:branchReference},{label:'Wareed Mobile',current:mobileCurrent,reference:mobileReference},{label:'غير مصنف',current:reservationSourceValue(current,'unclassified'),reference:reservationSourceValue(reference,'unclassified')}]);renderReservationComparisonTables();
+}
+function renderReservationComparisonTables(){
+  const branchBody=document.getElementById('reservationBranchCompareRows'),employeeBody=document.getElementById('reservationEmployeeCompareRows');if(!branchBody||!employeeBody)return;
+  const branches=[...RESERVATION_BRANCH_COMPARE_ROWS].sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));document.getElementById('reservationBranchCompareCount').textContent=branches.length+' فرع';branchBody.innerHTML=branches.map(row=>'<tr><td class="branch">'+escapeHtml(row.name)+'</td><td>'+money(row.current)+'</td><td>'+money(row.reference)+'</td><td class="'+compareClass(row.delta)+'">'+signedMoney(row.delta)+'</td><td><span class="delta-chip '+compareClass(row.delta)+'">'+signedPercent(row.percent)+'</span></td><td>'+money(row.currentIndoor)+'</td><td>'+money(row.currentOutdoor)+'</td><td class="'+compareClass(row.delta)+'">'+(row.delta>0?'ارتفاع':row.delta<0?'انخفاض':'ثابت')+'</td></tr>').join('');
+  const query=String(document.getElementById('reservationEmployeeCompareFilter')?.value||'').toLowerCase(),group=document.getElementById('reservationEmployeeCompareGroup')?.value||'all';const employees=RESERVATION_EMPLOYEE_COMPARE_ROWS.filter(row=>(group==='all'||row.group===group)&&row.name.toLowerCase().includes(query)).sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));document.getElementById('reservationEmployeeCompareCount').textContent=employees.length+' صف';employeeBody.innerHTML=employees.map(row=>'<tr><td class="branch">'+escapeHtml(row.name)+'</td><td>'+(row.group==='callCenter'?'خدمة العملاء':row.group==='mobile'?'Wareed Mobile':'فرع')+'</td><td>'+money(row.current)+'</td><td>'+money(row.reference)+'</td><td class="'+compareClass(row.delta)+'">'+signedMoney(row.delta)+'</td><td>'+money(row.currentIndoor)+'</td><td>'+money(row.currentOutdoor)+'</td><td class="'+compareClass(row.delta)+'">'+(row.delta>0?'ارتفاع':row.delta<0?'انخفاض':'ثابت')+'</td></tr>').join('');
+}
+function renderReservationPerformanceChart(elementId,points){
+  const chart=document.getElementById(elementId);if(!chart)return;
+  if(!points.length){chart.innerHTML='<div class="reservation-chart-empty">لا توجد لقطات يومية مكتملة لعرضها حتى الآن</div>';return}
+  const max=Math.max(1,...points.flatMap(point=>[Number(point.indoor)||0,Number(point.outdoor)||0]));
+  const bar=(value,mode,label,date)=>{value=Number(value)||0;const height=value?Math.max(4,value/max*82):0;return '<div class="reservation-bar '+mode+'" style="height:'+height.toFixed(2)+'%" title="'+escapeHtml(date+' • '+label+': '+money(value))+'" aria-label="'+escapeHtml(date+' '+label+' '+money(value))+'"><b>'+money(value)+'</b></div>'};
+  chart.innerHTML=points.map(point=>{const date=String(point.date||''),day=date.slice(8,10),month=date.slice(5,7),total=(Number(point.indoor)||0)+(Number(point.outdoor)||0);return '<div class="reservation-day">'+bar(point.indoor,'indoor','Indoor',date)+bar(point.outdoor,'outdoor','Outdoor',date)+'<strong class="reservation-day-total" title="مجموع حجوزات اليوم">'+money(total)+'</strong><span class="reservation-day-label">'+day+'/'+month+'</span></div>'}).join('');
+  requestAnimationFrame(()=>{chart.scrollLeft=chart.scrollWidth});
+}
+function toggleReservationChart(button){
+  const card=button.closest('.reservation-chart-card');if(!card)return;const opening=!card.classList.contains('chart-fullscreen');
+  document.querySelectorAll('.reservation-chart-card.chart-fullscreen').forEach(item=>{item.classList.remove('chart-fullscreen');const control=item.querySelector('.chart-expand');if(control){control.textContent='⛶';control.title='تكبير الشارت'}});
+  card.classList.toggle('chart-fullscreen',opening);button.textContent=opening?'✕':'⛶';button.title=opening?'إغلاق الشاشة الكاملة':'تكبير الشارت';document.body.style.overflow=opening?'hidden':'';
+}
+document.addEventListener('keydown',event=>{if(event.key==='Escape'){const card=document.querySelector('.reservation-chart-card.chart-fullscreen');if(card)toggleReservationChart(card.querySelector('.chart-expand'))}});
+function renderReservations(){
+  const report=DATA.reservations||{};
+  const modesComplete=report.modeCountsComplete===true,hasModes=Number.isFinite(Number(report.indoor))&&Number.isFinite(Number(report.outdoor));
+  document.getElementById('indoor').textContent=modesComplete&&hasModes?money(report.indoor):'—';document.getElementById('outdoor').textContent=modesComplete&&hasModes?money(report.outdoor):'—';
+  const sources=report.bookingSources||{},callCenter=sources.callCenter||{},branchSources=sources.branches||{},mobile=sources.mobile||{},sourceComplete=report.sourceBreakdownComplete===true;
+  const sourceValue=(group,key)=>sourceComplete&&Number.isFinite(Number(group[key]))?money(group[key]):'—';
+  document.getElementById('callCenterReservations').textContent=sourceValue(callCenter,'total');document.getElementById('callCenterIndoor').textContent=sourceValue(callCenter,'indoor');document.getElementById('callCenterOutdoor').textContent=sourceValue(callCenter,'outdoor');
+  document.getElementById('branchReservations').textContent=sourceValue(branchSources,'total');document.getElementById('branchIndoor').textContent=sourceValue(branchSources,'indoor');document.getElementById('branchOutdoor').textContent=sourceValue(branchSources,'outdoor');
+  document.getElementById('mobileReservations').textContent=sourceValue(mobile,'total');document.getElementById('mobileIndoor').textContent=sourceValue(mobile,'indoor');document.getElementById('mobileOutdoor').textContent=sourceValue(mobile,'outdoor');
+  const unclassified=Number(sources.unclassified?.total)||0,classified=Number(callCenter.total||0)+Number(branchSources.total||0)+Number(mobile.total||0);
+  document.getElementById('reservationSourceNote').textContent=sourceComplete?'خدمة العملاء + الفروع + Wareed Mobile = '+money(classified)+(unclassified?' • غير مصنف: '+money(unclassified):'')+' • Wareed Mobile مفصول من Home Visit - RUH':'تفاصيل مصدر الحجز غير مكتملة؛ يعرض التطبيق شرطة بدل أرقام تخمينية';
+  document.getElementById('reservationModeNote').textContent=modesComplete&&hasModes?'Indoor + Outdoor = '+money(Number(report.indoor)+Number(report.outdoor))+' • المصدر: '+(report.modeSource||'آخر ملف حجوزات مكتمل من LDM')+(report.employeeDetailsComplete===false?' • قوائم الموظفين والفروع محفوظة من آخر تفاصيل مكتملة '+(report.employeeDetailsCapturedAt||''):''):'تفاصيل Indoor وOutdoor غير مكتملة؛ لن يعرض التطبيق أرقامًا تخمينية';
+  const performance=Array.isArray(report.dailyPerformance)?report.dailyPerformance:[];
+  renderReservationPerformanceChart('callCenterReservationChart',performance.map(point=>({date:point.date,...(point.callCenter||{})})));
+  renderReservationPerformanceChart('branchReservationChart',performance.map(point=>({date:point.date,...(point.branches||{})})));
+  renderReservationPerformanceChart('mobileReservationChart',performance.map(point=>({date:point.date,...(point.mobile||{})})));
+  const performanceMonth=performance.length?String(performance[performance.length-1].date||'').slice(0,7):'';
+  document.getElementById('reservationPerformanceNote').textContent=performance.length?'يعرض شهر '+performanceMonth+' فقط • '+money(performance.length)+' أيام ذات لقطات مكتملة من LDM • آخر يوم: '+performance[performance.length-1].date:'سيبدأ الشارت بالظهور بعد حفظ أول لقطة يومية مكتملة من LDM';
+  document.getElementById('reservationUpdated').textContent=report.capturedAt?'آخر تحديث: '+report.capturedAt:'متابعة الحجوزات ومواعيد الزيارة';
+  const reservationCells=row=>'<td><b>'+money(row.total)+'</b></td><td class="mode-indoor">'+money(row.indoor)+'</td><td class="mode-outdoor">'+money(row.outdoor)+'</td>';
+  document.getElementById('visitRows').innerHTML=(report.visits||[]).map(row=>'<tr><td class="name-col">'+row.name+'</td>'+reservationCells(row)+'</tr>').join('');
+  const branches=filtered([...(report.branches||[])],'reservationFilter','reservationSort');
+  document.getElementById('branchRows').innerHTML=branches.map((row,index)=>'<tr><td>'+(index+1)+'</td><td class="branch name-col">'+row.name+'</td>'+reservationCells(row)+'</tr>').join('');
+  document.getElementById('callCenterEmployeeRows').innerHTML=(report.callCenterEmployees||[]).map((row,index)=>'<tr><td>'+(index+1)+'</td><td class="branch name-col">'+row.name+'</td>'+reservationCells(row)+'</tr>').join('');
+  document.getElementById('branchEmployeeRows').innerHTML=(report.branchEmployees||report.employees||[]).map((row,index)=>'<tr><td>'+(index+1)+'</td><td class="branch name-col">'+row.name+'</td>'+reservationCells(row)+'</tr>').join('');
+}
+function applyState(state){
+  if(typeof state==='string')state=JSON.parse(state); DATA={...DATA,...state,metrics:{...DATA.metrics,...(state.metrics||{})}};
+  paintMetrics();renderTrend();renderExecutive();renderDaily();renderMonthly();renderReservations();renderSalesComparison();renderReservationComparison();renderRecipients();renderAutomation();updateSendRecipients();enableTableSorting();
+  const connected=state.connected===true,status=document.getElementById('status');status.classList.toggle('ok',connected);status.classList.toggle('bad',state.connected===false);
+  document.getElementById('sourceStatus').textContent=state.status||(connected?'متصل مباشر':'آخر نسخة محفوظة');
+  const updated=state.updatedAt||state.generatedAt||DATA.generatedAt;document.getElementById('updated').textContent=updated?'آخر تحديث: '+new Date(updated).toLocaleString('ar-SA'):'بانتظار التحديث';
+  const published=DATA.store?.publishedAt||updated;document.getElementById('executiveUpdated').textContent='آخر لقطة مكتملة من Google Sheets: '+reportStamp(published);
+  if(DATA.daily)updateDailyHeader();
+  document.getElementById('monthlyUpdated').textContent='محدّث حتى: '+reportStamp(DATA.monthly?.updatedAt);
+  if(state.sync){const s=state.sync,panel=document.getElementById('syncPanel');panel.classList.toggle('show',!!s.running||s.stage==='error');document.getElementById('syncMessage').textContent=s.message||'';document.getElementById('syncPercent').textContent=(s.percent||0)+'%';document.getElementById('syncBar').style.width=(s.percent||0)+'%';document.getElementById('refreshButton').disabled=!!s.running;if(!s.running&&s.stage==='complete')setTimeout(()=>panel.classList.remove('show'),2200)}
+}
+function normalName(value){return String(value||'').toLowerCase().replace(/\bbranch\b/g,'').replace(/[^a-z0-9]+/g,' ').trim()}
+function dailyDateKey(value){const text=String(value||'').trim();let match=text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);if(match)return match[1]+'-'+String(Number(match[2])).padStart(2,'0')+'-'+String(Number(match[3])).padStart(2,'0');match=text.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})/);return match?match[3]+'-'+String(Number(match[2])).padStart(2,'0')+'-'+String(Number(match[1])).padStart(2,'0'):''}
+function isFridayDate(value){const key=dailyDateKey(value);if(!key)return false;const parts=key.split('-').map(Number);return new Date(Date.UTC(parts[0],parts[1]-1,parts[2])).getUTCDay()===5}
+function activeDailyTargetMap(value){const daily=DATA.daily||{},friday=daily.fridayTargets||{},regular=daily.regularTargets||daily.targets||{};return isFridayDate(value)&&Object.keys(friday).length?friday:regular}
+function applyLdmDailyRows(rows,meta){
+  if(!Array.isArray(rows)||!rows.length)return;
+  const aliases={'home visit ruh':'home visit','al taif2':'al taif2 jed','khamis mushait asir':'khamis mushait abha','alkurnish jazan':'alkurnish jizan'};
+  const targetDate=meta?.from||DATA.daily?.from||todayIso,targetMap=activeDailyTargetMap(targetDate),current=new Map((DATA.daily?.rows||[]).map(row=>[normalName(row.branch),row]));
+  current.forEach(row=>{const key=normalName(row.branch),configured=Number(targetMap[key]||targetMap[aliases[key]]||0),target=configured>0?configured:defaultDailyTarget();row.target=target;row.targetDefaulted=!(configured>0);row.income=0;row.patients=0;row.rate=0;row.remaining=target});
+  for(const fresh of rows){
+    if(/audit(?:ing)?|اودتنق|تدقيق/i.test(fresh.branch||''))continue;
+    const key=normalName(fresh.branch),old=current.get(key)||current.get(aliases[key]);
+    if(old){old.income=Number(fresh.income)||0;old.patients=Math.round(Number(fresh.patients)||0);old.rate=old.target?old.income/old.target*100:0;old.remaining=Math.max(0,old.target-old.income)}
+    else{const configured=Number(targetMap[key]||targetMap[aliases[key]]||0),target=configured>0?configured:defaultDailyTarget();current.set(key,{branch:fresh.branch,income:Number(fresh.income)||0,patients:Math.round(Number(fresh.patients)||0),target,targetDefaulted:configured<=0,rate:(Number(fresh.income)||0)/target*100,remaining:Math.max(0,target-(Number(fresh.income)||0))})}
+  }
+  const all=[...current.values()],m=DATA.metrics;
+  m.dailyRevenue=Math.round(all.reduce((sum,row)=>sum+row.income,0));m.dailyTarget=all.reduce((sum,row)=>sum+(Number(row.target)>0?Number(row.target):defaultDailyTarget()),0);m.dailyAcc=all.reduce((sum,row)=>sum+row.patients,0);m.dailyRate=m.dailyTarget?m.dailyRevenue/m.dailyTarget*100:0;
+  const today=String(new Date().getDate()).padStart(2,'0');DATA.executive=DATA.executive||{};const trend=Array.isArray(DATA.executive.trend)?DATA.executive.trend:[];const todayPoint=trend.find(row=>String(row.date).padStart(2,'0')===today);if(todayPoint)todayPoint.value=m.dailyRevenue;else trend.push({date:today,value:m.dailyRevenue});DATA.executive.trend=trend.slice(-31);
+  DATA.daily={...DATA.daily,rows:all,targets:targetMap,capturedAt:meta?.capturedAt||new Date().toISOString(),from:meta?.from||DATA.daily.from,to:meta?.to||DATA.daily.to};
+  const dateMatch=String(DATA.daily.from||'').match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})/),dateKey=dateMatch?dateMatch[3]+'-'+String(Number(dateMatch[2])).padStart(2,'0')+'-'+String(Number(dateMatch[1])).padStart(2,'0'):todayIso;if(dateKey){DATA.daily.reports={...(DATA.daily.reports||{}),[dateKey]:{date:dateKey,label:dateKey.split('-').reverse().join('/'),capturedAt:DATA.daily.capturedAt,from:DATA.daily.from,to:DATA.daily.to,rows:all,metrics:{dailyRevenue:m.dailyRevenue,dailyTarget:m.dailyTarget,dailyRate:m.dailyRate,dailyAcc:m.dailyAcc},targetSource:DATA.daily.targetSource||''}};DATA.daily.availableDates=[...new Set([...(DATA.daily.availableDates||[]),dateKey])].sort();DAILY_SELECTED_DATE=dateKey;if(dateKey.slice(0,7)===executiveView().monthKey)HEAT_SELECTED_DATE=dateKey}
+  applyState({metrics:m,daily:DATA.daily,updatedAt:DATA.daily.capturedAt,status:'اليومي محدث من LDM',connected:true});
+}
+function applyLdmReservations(payload){
+  const rows=payload?.rows||[],employees=new Map(),emptyMode=()=>({total:0,indoor:0,outdoor:0}),visits=new Map([['زيارة اليوم',emptyMode()],['زيارة غدًا',emptyMode()],['بعد غد',emptyMode()],['باقي الأسبوع',emptyMode()],['باقي الشهر',emptyMode()],['الشهر القادم',emptyMode()],['لاحقًا',emptyMode()]]);
+  let indoor=0,outdoor=0;const now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  for(const row of rows){
+    const mode=String(row.mode).toLowerCase().includes('indoor')?'indoor':'outdoor';if(mode==='indoor')indoor++;else outdoor++;
+    if(row.employee)employees.set(row.employee,(employees.get(row.employee)||0)+1);
+    const m=String(row.visit||'').match(/(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})/);let label='لاحقًا';
+    if(m){const date=new Date(+m[3],+m[2]-1,+m[1]),days=Math.round((date-today)/86400000);label=days<=0?'زيارة اليوم':days===1?'زيارة غدًا':days===2?'بعد غد':days<=7?'باقي الأسبوع':date.getMonth()===today.getMonth()?'باقي الشهر':date.getMonth()===(today.getMonth()+1)%12?'الشهر القادم':'لاحقًا'}
+    const counts=visits.get(label)||emptyMode();counts.total++;counts[mode]++;visits.set(label,counts);
+  }
+  const total=Number(payload.total)||rows.length,complete=total>0&&rows.length>=total,old=DATA.reservations||{};DATA.reservations={...old,total,modeCountsComplete:complete,indoor:complete?indoor:old.indoor,outdoor:complete?outdoor:old.outdoor,visits:complete?[...visits].map(([name,counts])=>({name,...counts})):old.visits,capturedAt:new Date().toLocaleString('ar-SA')};DATA.metrics.reservations=total;applyState({metrics:DATA.metrics,reservations:DATA.reservations,updatedAt:new Date().toISOString(),status:complete?'الحجوزات محدثة من LDM':'إجمالي الحجوزات مباشر • التفاصيل من آخر ملف كامل',connected:true});
+}
+function applyCloudBootstrap(payload){
+  if(typeof payload==='string')payload=safeParse(payload,{});
+  if(!payload||payload.ok!==true)return;
+  if(payload.snapshot){
+    const snapshot=payload.snapshot;
+    const heatMap=snapshot.executive?.heatMap||DATA.executive?.heatMap;
+    DATA={...DATA,...snapshot,metrics:{...DATA.metrics,...(snapshot.metrics||{})},executive:{...DATA.executive,...(snapshot.executive||{}),heatMap}};
+  }
+  const target=Array.isArray(payload.target)?payload.target:[],monthly=Array.isArray(payload.monthly)?payload.monthly:[];
+  if(target.length>1){
+    const head=target[0].map(x=>String(x||'').trim().toLowerCase()),branchAt=head.indexOf('branch'),dailyAt=head.indexOf('daily target'),heatAt=head.indexOf('fahad & reem target'),fridayAt=head.findIndex(value=>value==='المستهدف ليوم الجمعه'||value==='المستهدف ليوم الجمعة'||value==='friday target');
+    const regularTargets={},fridayTargets=fridayAt>=0?{}:{...(DATA.daily?.fridayTargets||{})},regularDefaults=new Set(),fridayDefaults=new Set(),heatTargets=heatAt>=0?{}:{...(DATA.daily?.heatTargets||{})};for(const row of target.slice(1)){const branch=String(row[branchAt]||'').trim(),key=normalName(branch);if(branch&&!/^(area|total)$/i.test(branch)){const configured=Number(String(row[dailyAt]||'').replace(/,/g,''))||0;regularTargets[key]=configured>0?configured:defaultDailyTarget();if(configured<=0)regularDefaults.add(key);if(fridayAt>=0){const fridayConfigured=Number(String(row[fridayAt]||'').replace(/,/g,''))||0;fridayTargets[key]=fridayConfigured>0?fridayConfigured:defaultDailyTarget();if(fridayConfigured<=0)fridayDefaults.add(key)}if(heatAt>=0){const heatConfigured=Number(String(row[heatAt]||'').replace(/,/g,''))||0;if(heatConfigured>0)heatTargets[key]=heatConfigured}}}
+    DATA.daily=DATA.daily||{rows:[]};DATA.daily.regularTargets=regularTargets;DATA.daily.fridayTargets=fridayTargets;DATA.daily.heatTargets=heatTargets;DATA.daily.defaultDailyTarget=defaultDailyTarget();DATA.daily.defaultMonthlyTarget=defaultMonthlyTarget();const targetDate=DATA.daily.from||DATA.daily.capturedAt||todayIso,targets=isFridayDate(targetDate)&&Object.keys(fridayTargets).length?fridayTargets:regularTargets,defaultTargetKeys=isFridayDate(targetDate)?fridayDefaults:regularDefaults;DATA.daily.targets=targets;for(const row of DATA.daily.rows||[]){const key=normalName(row.branch),configured=Number(targets[key])||0,value=configured>0?configured:defaultDailyTarget();if(!(configured>0))targets[key]=value;row.target=value;row.targetDefaulted=defaultTargetKeys.has(key)||!(configured>0);row.rate=(Number(row.income)||0)/value*100;row.remaining=Math.max(0,value-(Number(row.income)||0))}
+    DATA.metrics.dailyTarget=Object.values(targets).reduce((sum,value)=>sum+value,0);DATA.metrics.dailyRate=DATA.metrics.dailyTarget?DATA.metrics.dailyRevenue/DATA.metrics.dailyTarget*100:0;
+  }
+  if(monthly.length>1){
+    const head=monthly[0].map(x=>String(x||'').trim().toLowerCase()),at=name=>head.indexOf(name),num=value=>Number(String(value||'').replace(/[,%]/g,''))||0;
+    const total=monthly.slice(1).find(row=>/^total$/i.test(String(row[at('branch')]||'').trim()));
+    const defaultedAt=at('target defaulted'),rows=monthly.slice(1).filter(row=>row!==total&&String(row[at('branch')]||'').trim()).map(row=>{const revenue=num(row[at('month revenue')]),configured=num(row[at('month target')]),targetValue=configured>0?configured:defaultMonthlyTarget(),targetDefaulted=configured<=0||(defaultedAt>=0&&String(row[defaultedAt]).toLowerCase()==='true');return {branch:String(row[at('branch')]||'').trim(),revenue,target:targetValue,rate:targetValue?revenue/targetValue*100:0,remaining:Math.max(0,targetValue-revenue),remainingRate:targetValue?Math.max(0,targetValue-revenue)/targetValue*100:0,targetDefaulted}});
+    DATA.monthly={rows,updatedAt:total&&at('updated at')>=0?total[at('updated at')]:DATA.monthly?.updatedAt};DATA.metrics.monthRevenue=rows.reduce((sum,row)=>sum+row.revenue,0);DATA.metrics.monthTarget=rows.reduce((sum,row)=>sum+row.target,0);DATA.metrics.monthRate=DATA.metrics.monthTarget?DATA.metrics.monthRevenue/DATA.metrics.monthTarget*100:0;
+  }
+  const storeTime=DATA.store?.publishedAt||payload.serverTime;
+  applyState({metrics:DATA.metrics,daily:DATA.daily,monthly:DATA.monthly,executive:DATA.executive,reservations:DATA.reservations,recipients:DATA.recipients,automation:DATA.automation,store:DATA.store,updatedAt:storeTime,status:'البيانات محدثة من Google Sheets',connected:true});
+}
+window.applyState=applyState;
+window.applyLdmDailyRows=applyLdmDailyRows;
+window.applyLdmReservations=applyLdmReservations;
+window.applyCloudBootstrap=applyCloudBootstrap;
+window.applyLocalConfig=applyLocalConfig;
+window.onDiagnostic=onDiagnostic;
+window.sendProgressUpdate=sendProgressUpdate;
+window.reportRequestUpdate=reportRequestUpdate;
+window.archivePreview=archivePreview;
+window.cloudAdminUpdate=cloudAdminUpdate;
+const todayIso=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+const monthStart=todayIso.slice(0,8)+'01';
+for(const id of ['sendTo','archiveTo'])if(!document.getElementById(id).value)document.getElementById(id).value=todayIso;
+for(const id of ['sendFrom','archiveFrom'])if(!document.getElementById(id).value)document.getElementById(id).value=monthStart;
+// Hosted portal loads data only after server-side authentication.
+if(!window.WareedNative)WareedPortal.start();
+</script>
+</body>
+</html>
