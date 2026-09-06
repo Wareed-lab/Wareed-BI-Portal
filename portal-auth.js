@@ -8,6 +8,7 @@
   let session=null;
   let users=[];
   let originalPortableCall=null;
+  let userFormTouched=false;
 
   function readSession(){try{const value=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');return value&&value.token?value:null}catch(_){return null}}
   function saveSession(value){session=value;if(value)localStorage.setItem(SESSION_KEY,JSON.stringify(value));else localStorage.removeItem(SESSION_KEY)}
@@ -21,6 +22,10 @@
     try{result=JSON.parse(text)}catch(_){throw new Error('تعذر قراءة رد خدمة Wareed.');}
     if(!response.ok||result.ok!==true)throw new Error(result.error||'تعذر الاتصال بخدمة Wareed.');
     return result;
+  }
+  function isSessionFailure(error){
+    const message=String(error?.message||error||'');
+    return /يلزم تسجيل الدخول|انتهت الجلسة|الحساب غير مفعل|Sign-in is required|Session expired|User is disabled/i.test(message);
   }
   function gate(){return document.getElementById('wareedPortalGate')}
   function showGate(message){
@@ -96,13 +101,24 @@
   async function loadBootstrap(silent){
     try{
       const result=await request('webBootstrap',{});session.user=result.user;saveSession(session);window.applyCloudBootstrap(result);window.applyLocalConfig({cloudEndpoint:CONFIG.endpoint,liveIntervalMinutes:1},{name:result.user.username,email:result.user.username,role:result.user.role},[]);installSessionHeader();document.getElementById('portalSessionName').textContent=result.user.username;applyPermissions();if(result.user.role==='owner')renderAdminShell();hideGate();if(!silent)window.toast('تم تسجيل الدخول بنجاح');return result;
-    }catch(err){saveSession(null);showGate(err.message);return null}
+    }catch(err){
+      const message=err.message||'تعذر الاتصال بخدمة Wareed.';
+      if(isSessionFailure(err)){
+        saveSession(null);clearInterval(window.PORTABLE_LIVE_TIMER);showGate(message);
+      }else if(document.body.classList.contains('portal-locked')){
+        showGate(message+' الجلسة محفوظة؛ أعد تحميل الصفحة للمحاولة مرة أخرى.');
+      }else{
+        const status=document.getElementById('sourceStatus');if(status)status.textContent='تعذر التحديث مؤقتًا — ستتم المحاولة تلقائيًا';
+      }
+      return null;
+    }
   }
   function renderAdminShell(){
     const section=document.getElementById('users');if(!section)return;
-    section.innerHTML='<div class="hero"><h1>إدارة المستخدمين والصلاحيات</h1><p>هذه الصفحة خاصة بحساب المالك فقط</p></div><div class="section"><div class="section-head"><h2 id="portalUserFormTitle">إضافة مستخدم</h2><button class="soft" type="button" onclick="WareedPortal.resetUserForm()">مستخدم جديد</button></div><input type="hidden" id="portalUserId"><div class="portal-admin-grid"><label>اسم المستخدم<input id="portalUserName" dir="ltr" autocomplete="off" placeholder="username"></label><label>كلمة المرور<input id="portalUserPassword" dir="ltr" type="password" autocomplete="new-password" placeholder="مطلوبة للجديد، واتركها فارغة عند عدم التغيير"></label><label class="full"><span><input type="checkbox" id="portalUserEnabled" checked> الحساب مفعل</span></label></div><div class="portal-permission-groups"><div class="portal-permission-box"><h3>الصفحات التي يستطيع فتحها</h3><div class="portal-permission-list" id="portalViewPermissions"></div></div><div class="portal-permission-box"><h3>الإجراءات التي يستطيع تنفيذها</h3><div class="portal-permission-list" id="portalActionPermissions"></div></div></div><div class="portal-admin-actions"><button class="primary" type="button" onclick="WareedPortal.saveUser()">حفظ المستخدم والصلاحيات</button><button class="soft" type="button" onclick="WareedPortal.resetUserForm()">إلغاء التعديل</button></div><p class="subtle" id="portalUserMessage"></p></div><div class="section"><div class="section-head"><h2>المستخدمون</h2><span class="pill" id="portalUsersCount">0</span></div><div class="table-scroll"><table class="portal-users-table"><thead><tr><th>المستخدم</th><th>الحالة</th><th>الدور</th><th>الصفحات</th><th>الإجراءات</th><th>آخر دخول</th><th>التحكم</th></tr></thead><tbody id="portalUsersBody"></tbody></table></div></div>';
+    section.innerHTML='<div class="hero"><h1>إدارة المستخدمين والصلاحيات</h1><p>هذه الصفحة خاصة بحساب المالك فقط</p></div><div class="section"><div class="section-head"><h2 id="portalUserFormTitle">إضافة مستخدم</h2><button class="soft" type="button" onclick="WareedPortal.resetUserForm()">مستخدم جديد</button></div><input type="hidden" id="portalUserId"><div class="portal-admin-grid"><label>اسم المستخدم<input id="portalUserName" name="portal_new_username" dir="ltr" autocomplete="off" data-lpignore="true" data-1p-ignore="true" readonly onfocus="this.removeAttribute(\'readonly\')" placeholder="username"></label><label>كلمة المرور<input id="portalUserPassword" name="portal_new_password" dir="ltr" type="password" autocomplete="new-password" data-lpignore="true" data-1p-ignore="true" readonly onfocus="this.removeAttribute(\'readonly\')" placeholder="مطلوبة للجديد، واتركها فارغة عند عدم التغيير"></label><label class="full"><span><input type="checkbox" id="portalUserEnabled" checked> الحساب مفعل</span></label></div><div class="portal-permission-groups"><div class="portal-permission-box"><h3>الصفحات التي يستطيع فتحها</h3><div class="portal-permission-list" id="portalViewPermissions"></div></div><div class="portal-permission-box"><h3>الإجراءات التي يستطيع تنفيذها</h3><div class="portal-permission-list" id="portalActionPermissions"></div></div></div><div class="portal-admin-actions"><button class="primary" type="button" onclick="WareedPortal.saveUser()">حفظ المستخدم والصلاحيات</button><button class="soft" type="button" onclick="WareedPortal.resetUserForm()">إلغاء التعديل</button></div><p class="subtle" id="portalUserMessage"></p></div><div class="section"><div class="section-head"><h2>المستخدمون</h2><span class="pill" id="portalUsersCount">0</span></div><div class="table-scroll"><table class="portal-users-table"><thead><tr><th>المستخدم</th><th>الحالة</th><th>الدور</th><th>الصفحات</th><th>الإجراءات</th><th>آخر دخول</th><th>التحكم</th></tr></thead><tbody id="portalUsersBody"></tbody></table></div></div>';
     document.getElementById('portalViewPermissions').innerHTML=Object.entries(VIEW_LABELS).map(([key,label])=>'<label><input type="checkbox" name="portalView" value="'+key+'"> '+label+'</label>').join('');
     document.getElementById('portalActionPermissions').innerHTML=Object.entries(ACTION_LABELS).map(([key,label])=>'<label><input type="checkbox" name="portalAction" value="'+key+'"> '+label+'</label>').join('');
+    section.querySelectorAll('#portalUserName,#portalUserPassword,#portalUserEnabled,[name=portalView],[name=portalAction]').forEach(node=>node.addEventListener('input',()=>{userFormTouched=true}));
     resetUserForm();
   }
   async function loadUsers(){try{const result=await request('webListUsers',{});users=result.users||[];renderUsers()}catch(err){window.toast(err.message)}}
@@ -112,20 +128,20 @@
     body.innerHTML=users.map(user=>'<tr class="'+(user.enabled?'':'portal-user-off')+'"><td><b dir="ltr">'+window.escapeHtml(user.username)+'</b></td><td>'+(user.enabled?'مفعل':'موقوف')+'</td><td><span class="portal-role '+user.role+'">'+(user.role==='owner'?'المالك':'مستخدم')+'</span></td><td>'+((user.permissions?.views||[]).length)+' صفحة</td><td>'+((user.permissions?.actions||[]).length)+' إجراء</td><td dir="ltr">'+(user.lastLoginAt?new Date(user.lastLoginAt).toLocaleString('ar-SA'):'—')+'</td><td><div class="portal-user-actions"><button class="soft" onclick="WareedPortal.editUser(\''+window.escapeJs(user.id)+'\')">تعديل</button>'+(user.role==='owner'?'':'<button class="soft danger" onclick="WareedPortal.deleteUser(\''+window.escapeJs(user.username)+'\')">حذف</button>')+'</div></td></tr>').join('')||'<tr><td colspan="7">لا يوجد مستخدمون</td></tr>';
   }
   function resetUserForm(){
-    ['portalUserId','portalUserName','portalUserPassword'].forEach(id=>{const node=document.getElementById(id);if(node)node.value=''});const enabled=document.getElementById('portalUserEnabled');if(enabled)enabled.checked=true;document.querySelectorAll('[name=portalView],[name=portalAction]').forEach(node=>node.checked=false);const title=document.getElementById('portalUserFormTitle');if(title)title.textContent='إضافة مستخدم';
+    ['portalUserId','portalUserName','portalUserPassword'].forEach(id=>{const node=document.getElementById(id);if(node)node.value=''});const enabled=document.getElementById('portalUserEnabled');if(enabled)enabled.checked=true;document.querySelectorAll('[name=portalView],[name=portalAction]').forEach(node=>node.checked=false);const title=document.getElementById('portalUserFormTitle');if(title)title.textContent='إضافة مستخدم';userFormTouched=false;
   }
   function editUser(id){
-    const user=users.find(item=>item.id===id);if(!user)return;document.getElementById('portalUserId').value=user.id;document.getElementById('portalUserName').value=user.username;document.getElementById('portalUserPassword').value='';document.getElementById('portalUserEnabled').checked=user.enabled;document.querySelectorAll('[name=portalView]').forEach(node=>node.checked=user.permissions?.views?.includes(node.value));document.querySelectorAll('[name=portalAction]').forEach(node=>node.checked=user.permissions?.actions?.includes(node.value));document.getElementById('portalUserFormTitle').textContent='تعديل '+user.username;scrollTo({top:document.getElementById('users').offsetTop,behavior:'smooth'});
+    const user=users.find(item=>item.id===id);if(!user)return;document.getElementById('portalUserId').value=user.id;document.getElementById('portalUserName').value=user.username;document.getElementById('portalUserPassword').value='';document.getElementById('portalUserEnabled').checked=user.enabled;document.querySelectorAll('[name=portalView]').forEach(node=>node.checked=user.permissions?.views?.includes(node.value));document.querySelectorAll('[name=portalAction]').forEach(node=>node.checked=user.permissions?.actions?.includes(node.value));document.getElementById('portalUserFormTitle').textContent='تعديل '+user.username;userFormTouched=false;scrollTo({top:document.getElementById('users').offsetTop,behavior:'smooth'});
   }
   async function saveUser(){
-    const message=document.getElementById('portalUserMessage');message.textContent='جارٍ الحفظ...';
+    const message=document.getElementById('portalUserMessage');if(!userFormTouched){message.textContent='لم يتم إجراء أي تغيير.';return}message.textContent='جارٍ الحفظ...';
     const user={id:document.getElementById('portalUserId').value,username:document.getElementById('portalUserName').value.trim(),password:document.getElementById('portalUserPassword').value,enabled:document.getElementById('portalUserEnabled').checked,permissions:{views:[...document.querySelectorAll('[name=portalView]:checked')].map(node=>node.value),actions:[...document.querySelectorAll('[name=portalAction]:checked')].map(node=>node.value)}};
-    try{const result=await request('webUpsertUser',{user});document.getElementById('portalUserPassword').value='';message.textContent='تم حفظ '+result.user.username;resetUserForm();await loadUsers();if(result.user.id===session.user.id){window.toast('تم تعديل حساب المالك. سجّل الدخول مجددًا إذا تغيرت كلمة المرور.')}}catch(err){message.textContent=err.message}
+    try{const previousUsername=session.user.username;const result=await request('webUpsertUser',{user});document.getElementById('portalUserPassword').value='';if(result.user.id===session.user.id&&(user.password||result.user.username!==previousUsername)){saveSession(null);clearInterval(window.PORTABLE_LIVE_TIMER);showGate('تم تحديث حساب المالك. سجّل الدخول بالبيانات الجديدة.');return}message.textContent='تم حفظ '+result.user.username;resetUserForm();await loadUsers()}catch(err){message.textContent=err.message}
   }
   async function deleteUser(username){if(!confirm('حذف المستخدم '+username+' نهائيًا؟'))return;try{await request('webDeleteUser',{username});window.toast('تم حذف المستخدم');await loadUsers()}catch(err){window.toast(err.message)}}
   async function start(){
     injectGate();installHooks();session=readSession();
-    if(session?.token){const result=await loadBootstrap(true);if(result){window.startPortableLive();return}}
+    if(session?.token){const result=await loadBootstrap(true);if(result)window.startPortableLive();return}
     showGate('');
   }
   window.WareedPortal={start,request,logout,loadUsers,renderUsers,editUser,deleteUser,saveUser,resetUserForm,permissions,canView,canAction};
