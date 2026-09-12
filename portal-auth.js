@@ -100,7 +100,7 @@
   }
   async function loadBootstrap(silent){
     try{
-      const result=await request('webBootstrap',{});session.user=result.user;saveSession(session);window.applyCloudBootstrap(result);window.applyLocalConfig({cloudEndpoint:CONFIG.endpoint,liveIntervalMinutes:1},{name:result.user.username,email:result.user.username,role:result.user.role},[]);installSessionHeader();document.getElementById('portalSessionName').textContent=result.user.username;applyPermissions();if(result.user.role==='owner')renderAdminShell();hideGate();if(!silent)window.toast('تم تسجيل الدخول بنجاح');return result;
+      const result=await request('webBootstrap',{});session.user=result.user;saveSession(session);window.applyCloudBootstrap(result);window.applyLocalConfig({cloudEndpoint:CONFIG.endpoint,liveIntervalMinutes:1},{name:result.user.username,email:result.user.username,role:result.user.role},[]);installSessionHeader();document.getElementById('portalSessionName').textContent=result.user.username;applyPermissions();if(result.user.role==='owner')renderAdminShell();hideGate();window.startPortableLive?.();if(!silent)window.toast('تم تسجيل الدخول بنجاح');return result;
     }catch(err){
       const message=err.message||'تعذر الاتصال بخدمة Wareed.';
       if(isSessionFailure(err)){
@@ -141,7 +141,7 @@
   async function deleteUser(username){if(!confirm('حذف المستخدم '+username+' نهائيًا؟'))return;try{await request('webDeleteUser',{username});window.toast('تم حذف المستخدم');await loadUsers()}catch(err){window.toast(err.message)}}
   async function start(){
     injectGate();installHooks();session=readSession();
-    if(session?.token){const result=await loadBootstrap(true);if(result)window.startPortableLive();return}
+    if(session?.token){await loadBootstrap(true);return}
     showGate('');
   }
   window.WareedPortal={start,request,logout,loadUsers,renderUsers,editUser,deleteUser,saveUser,resetUserForm,permissions,canView,canAction};
