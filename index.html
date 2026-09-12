@@ -55,9 +55,9 @@
 @media(max-width:430px){.compare-controls{grid-template-columns:1fr}}
 </style>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<link rel="stylesheet" href="portal.css?v=b8e87cd60ea5">
-<script src="runtime-config.js?v=b8e87cd60ea5"></script>
-<script src="portal-auth.js?v=b8e87cd60ea5"></script>
+<link rel="stylesheet" href="portal.css?v=051f03eb9c73">
+<script src="runtime-config.js?v=051f03eb9c73"></script>
+<script src="portal-auth.js?v=051f03eb9c73"></script>
 </head>
 <body class="portal-locked">
 <header class="top">
@@ -516,15 +516,27 @@ function renderTrend(){
   const selectedDay=String(HEAT_SELECTED_DATE||'').slice(-2);view.innerHTML=visibleRows.map(row=>{const valueLabel=row.value>=1000?Math.round(row.value/1000)+'K':money(row.value),exactLabel=money(row.value)+' ر.س',selected=String(row.date).padStart(2,'0')===selectedDay?' selected':'';return '<div class="col'+selected+'" style="--w:'+width+'px;--h:'+Math.max(3,row.value/max*180)+'px" title="يوم '+escapeHtml(row.date)+' — '+escapeHtml(exactLabel)+'" aria-label="يوم '+escapeHtml(row.date)+' '+escapeHtml(exactLabel)+'"><b>'+valueLabel+'</b><i>'+row.date+'</i></div>'}).join('');
 }
 const HEAT={scale:1,x:0,y:0,selected:-1,level:-1,pointers:new Map(),drag:null,lastDistance:0,map:null,tileLayer:null,baseLayers:null,layerControl:null,markerLayer:null,markers:[],boundsFitted:false,visibleBoundsFitted:false,tileErrors:0};
+let HEAT_MONTH_TO_DATE_CACHE={key:'',value:null};
+function heatMonthToDateData(){
+  const month=executiveView(),reports=DATA.daily?.reports||{},allDates=availableDailyDates(month.monthKey),selectedDate=HEAT_SELECTED_DATE||allDates.at(-1)||'',dates=allDates.filter(date=>!selectedDate||date<=selectedDate),cacheKey=[month.monthKey,selectedDate,DATA.generatedAt||'',...dates.map(date=>date+':'+String(reports[date]?.capturedAt||'')+':'+String(reports[date]?.rows?.length||0)+':'+String(reports[date]?.metrics?.dailyRevenue??''))].join('|');
+  if(HEAT_MONTH_TO_DATE_CACHE.key===cacheKey&&HEAT_MONTH_TO_DATE_CACHE.value)return HEAT_MONTH_TO_DATE_CACHE.value;
+  const byBranch=new Map();let totalRevenue=0,totalAcc=0;
+  for(const date of dates){
+    const report=reports[date]||{},rows=Array.isArray(report.rows)?report.rows:[],rowRevenue=rows.reduce((sum,row)=>sum+(Number(row.income)||0),0),rowAcc=rows.reduce((sum,row)=>sum+(Number(row.patients)||0),0),metricRevenue=Number(report.metrics?.dailyRevenue),metricAcc=Number(report.metrics?.dailyAcc);
+    totalRevenue+=Number.isFinite(metricRevenue)?metricRevenue:rowRevenue;totalAcc+=Number.isFinite(metricAcc)?metricAcc:rowAcc;
+    for(const row of rows){const key=normalName(row.branch);if(!key)continue;const item=byBranch.get(key)||{revenue:0,patients:0};item.revenue+=Number(row.income)||0;item.patients+=Number(row.patients)||0;byBranch.set(key,item)}
+  }
+  const value={selectedDate,dates,hasArchive:dates.length>0,byBranch,totalRevenue:Math.round(totalRevenue),totalAcc:Math.round(totalAcc)};HEAT_MONTH_TO_DATE_CACHE={key:cacheKey,value};return value;
+}
 function heatSnapshot(point){
-  const month=executiveView(),day=heatDayView(),key=normalName(point.ldmBranch),dailyRows=Array.isArray(day.rows)?day.rows:[],daily=dailyRows.find(row=>normalName(row.branch)===key),monthly=(month.monthlyRows||DATA.monthly?.rows||[]).find(row=>normalName(row.branch)===key),targetForDay=executiveTargetForDay(point.ldmBranch,month);
+  const month=executiveView(),day=heatDayView(),monthToDate=heatMonthToDateData(),key=normalName(point.ldmBranch),dailyRows=Array.isArray(day.rows)?day.rows:[],daily=dailyRows.find(row=>normalName(row.branch)===key),monthly=(month.monthlyRows||DATA.monthly?.rows||[]).find(row=>normalName(row.branch)===key),cumulative=monthToDate.byBranch.get(key),targetForDay=executiveTargetForDay(point.ldmBranch,month);
   const aliases={'home visit ruh':'home visit','home visit asir':'home visit abha','home visit jazan':'home visit jizan','al taif2':'al taif2 jed','khamis mushait asir':'khamis mushait abha','alkurnish jazan':'alkurnish jizan'},heatTargets=month.heatTargets||DATA.daily?.heatTargets||{};
-  const income=Number(daily?.income)||0,configuredDailyTarget=Number(daily?.target)||0,dailyTarget=configuredDailyTarget>0?configuredDailyTarget:targetForDay.target,monthRevenue=Number(monthly?.revenue??point.monthRevenue)||0,configuredMonthTarget=Number(monthly?.target??point.monthTarget)||0,monthTarget=configuredMonthTarget>0?configuredMonthTarget:defaultMonthlyTarget(),configuredHeatTarget=Number(heatTargets[key]??heatTargets[aliases[key]]??point.heatTarget)||0,heatTarget=configuredHeatTarget>0?configuredHeatTarget:defaultMonthlyTarget();
-  const dailyReportAvailable=Array.isArray(day.rows),dailyLinked=dailyReportAvailable&&Boolean(key),dailyFound=Boolean(daily),monthlyFound=Boolean(monthly)||point.monthlyMatched===true,dailyTargetDefaulted=daily?daily.targetDefaulted===true:targetForDay.targetDefaulted,monthTargetDefaulted=monthly?.targetDefaulted===true||configuredMonthTarget<=0,heatTargetDefaulted=point.heatTargetDefaulted===true||configuredHeatTarget<=0;
+  const income=Number(daily?.income)||0,configuredDailyTarget=Number(daily?.target)||0,dailyTarget=configuredDailyTarget>0?configuredDailyTarget:targetForDay.target,monthRevenue=monthToDate.hasArchive?(Number(cumulative?.revenue)||0):(Number(monthly?.revenue??point.monthRevenue)||0),configuredMonthTarget=Number(monthly?.target??point.monthTarget)||0,monthTarget=configuredMonthTarget>0?configuredMonthTarget:defaultMonthlyTarget(),configuredHeatTarget=Number(heatTargets[key]??heatTargets[aliases[key]]??point.heatTarget)||0,heatTarget=configuredHeatTarget>0?configuredHeatTarget:defaultMonthlyTarget();
+  const dailyReportAvailable=Array.isArray(day.rows),dailyLinked=dailyReportAvailable&&Boolean(key),dailyFound=Boolean(daily),monthlyFound=monthToDate.hasArchive?Boolean(key):(Boolean(monthly)||point.monthlyMatched===true),dailyTargetDefaulted=daily?daily.targetDefaulted===true:targetForDay.targetDefaulted,monthTargetDefaulted=monthly?.targetDefaulted===true||configuredMonthTarget<=0,heatTargetDefaulted=point.heatTargetDefaulted===true||configuredHeatTarget<=0;
   return {income,patients:Number(daily?.patients)||0,dailyTarget,dailyRate:income/dailyTarget*100,monthRevenue,monthTarget,monthRate:monthRevenue/monthTarget*100,heatTarget,heatRate:monthRevenue/heatTarget*100,dailyReportAvailable,dailyLinked,dailyFound,monthlyFound,targetAvailable:true,heatTargetAvailable:true,dailyTargetDefaulted,monthTargetDefaulted,heatTargetDefaulted};
 }
 function heatValue(point,metric){const values=heatSnapshot(point);return metric==='monthly'?values.monthRevenue:metric==='patients'?values.patients:values.income}
-function heatMetricInfo(metric){return metric==='monthly'?{label:'مبيعات الشهر',unit:'ر.س'}:metric==='patients'?{label:'عملاء ACC اليوم',unit:'عميل'}:{label:'مبيعات اليوم',unit:'ر.س'}}
+function heatMetricInfo(metric){return metric==='monthly'?{label:'مبيعات الشهر حتى اليوم المحدد',unit:'ر.س'}:metric==='patients'?{label:'عملاء ACC اليوم',unit:'عميل'}:{label:'مبيعات اليوم',unit:'ر.س'}}
 function heatAchievement(point){const values=heatSnapshot(point),metric=document.getElementById('heatMetric')?.value||'daily';if(metric==='monthly')return values.monthlyFound&&values.heatTargetAvailable?values.heatRate:null;const days=Number(executiveView().monthKey?.slice(5,7))?new Date(Number(executiveView().monthKey.slice(0,4)),Number(executiveView().monthKey.slice(5,7)),0).getDate():30,dailyHeatTarget=values.heatTarget/Math.max(1,days);return values.dailyLinked&&dailyHeatTarget?values.income/dailyHeatTarget*100:null}
 function heatColor(rate){
   if(rate===null||rate===undefined||!Number.isFinite(Number(rate)))return '#8a9691';
@@ -597,7 +609,7 @@ function renderHeatMap(){
   }
   svg.setAttribute('viewBox',map.viewBox||'0 0 560 650');
   regions.innerHTML=map.regions.map(row=>'<path class="heat-region" fill-rule="evenodd" d="'+escapeHtml(row.path)+'"><title>'+escapeHtml(row.province+' — '+row.name)+'</title></path>').join('');
-  const metric=document.getElementById('heatMetric')?.value||'daily',day=heatDayView(),info=heatMetricInfo(metric),values=map.points.map(point=>heatValue(point,metric)),visible=map.points.map((point,index)=>({point,index,value:values[index]})).filter(row=>heatPointVisible(row.point)),max=Math.max(1,...visible.map(row=>row.value)),mappedTotal=visible.reduce((sum,row)=>sum+row.value,0),metricTotal=metric==='monthly'?Number(month.metrics?.monthRevenue):metric==='patients'?Number(day.metrics?.dailyAcc):Number(day.metrics?.dailyRevenue),filtered=HEAT.level>=0,officialTotal=filtered?mappedTotal:(Number.isFinite(metricTotal)&&metricTotal>=0?metricTotal:mappedTotal),unlocated=filtered?0:Math.max(0,officialTotal-mappedTotal);
+  const metric=document.getElementById('heatMetric')?.value||'daily',day=heatDayView(),monthToDate=heatMonthToDateData(),info=heatMetricInfo(metric),values=map.points.map(point=>heatValue(point,metric)),visible=map.points.map((point,index)=>({point,index,value:values[index]})).filter(row=>heatPointVisible(row.point)),max=Math.max(1,...visible.map(row=>row.value)),mappedTotal=visible.reduce((sum,row)=>sum+row.value,0),metricTotal=metric==='monthly'?(monthToDate.hasArchive?monthToDate.totalRevenue:Number(month.metrics?.monthRevenue)):metric==='patients'?Number(day.metrics?.dailyAcc):Number(day.metrics?.dailyRevenue),filtered=HEAT.level>=0,officialTotal=filtered?mappedTotal:(Number.isFinite(metricTotal)&&metricTotal>=0?metricTotal:mappedTotal),unlocated=filtered?0:Math.max(0,officialTotal-mappedTotal);
   if(HEAT.selected>=0&&!visible.some(row=>row.index===HEAT.selected))HEAT.selected=-1;
   points.innerHTML=visible.map(({point,index,value})=>{
     const snapshot=heatSnapshot(point),ratio=value/max,achievement=heatAchievement(point),color=heatColor(achievement),radius=8+Math.sqrt(ratio)*14,label=!snapshot.dailyLinked&&metric!=='monthly'?'اسم فرع LDM غير مربوط':metric==='patients'?money(value)+' عميل':money(value)+' ر.س',achievementLabel=achievement===null?'لا توجد بيانات كافية':'تحقيق الهدف: '+pctBidi(achievement)+(snapshot.heatTargetDefaulted?' ◈':'');
@@ -618,7 +630,7 @@ function selectHeatPoint(index,focus){
   setStreetMarkerStyles();
   document.querySelectorAll('.heat-rank').forEach(node=>node.classList.toggle('active',Number(node.dataset.index)===index));
   const values=heatSnapshot(point),rate=heatAchievement(point),match=values.dailyFound?'مرتبط بـ '+point.ldmBranch:values.dailyLinked?'لا توجد حركة للفرع في تقرير اليوم المحدد':'اسم فرع LDM غير مربوط بتقرير اليوم',achievement=rate===null?'تحقيق الهدف غير محسوب حتى تكتمل البيانات':'تحقيق الهدف: '+pctBidi(rate)+(values.heatTargetDefaulted?' ◈':''),dailySales=values.dailyLinked?'مبيعات اليوم: '+money(values.income)+' ر.س':'مبيعات اليوم: غير متاحة',locationNote=point.locationStatus==='approximate'?'الموقع تقريبي حسب الحي/المدينة حتى تظهر بطاقة الفرع في Google Maps':point.googleMapsFound===false?'لم تُعثر على بطاقة مؤكدة للفرع في Google Maps':point.listedOnWareedWebsite===false?'الموقع مؤكد من Google Maps وغير منشور بعد في صفحة فروع وريد':'الموقع مؤكد';
-  detail.innerHTML='<div><b>'+escapeHtml(point.name)+'</b><p>'+escapeHtml(point.address||'')+' • '+escapeHtml(dailySales)+' • '+escapeHtml(achievement)+' • ACC: '+(values.dailyLinked?money(values.patients):'غير متاح')+' • مبيعات الشهر: '+(values.monthlyFound?money(values.monthRevenue)+' ر.س':'غير متاحة')+'<br>'+escapeHtml(match)+'<br>'+escapeHtml(locationNote)+'</p></div><button class="soft" onclick="openSelectedHeatMap()">فتح في Google Maps</button>';
+  detail.innerHTML='<div><b>'+escapeHtml(point.name)+'</b><p>'+escapeHtml(point.address||'')+' • '+escapeHtml(dailySales)+' • '+escapeHtml(achievement)+' • ACC: '+(values.dailyLinked?money(values.patients):'غير متاح')+' • مبيعات الشهر حتى اليوم المحدد: '+(values.monthlyFound?money(values.monthRevenue)+' ر.س':'غير متاحة')+'<br>'+escapeHtml(match)+'<br>'+escapeHtml(locationNote)+'</p></div><button class="soft" onclick="openSelectedHeatMap()">فتح في Google Maps</button>';
   if(focus)focusHeatPoint(index);
 }
 function openSelectedHeatMap(){
