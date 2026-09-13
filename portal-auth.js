@@ -44,7 +44,7 @@
     try{
       const username=document.getElementById('portalUsername').value.trim(),password=document.getElementById('portalPassword').value;
       const result=await request('webLogin',{username,password,deviceId:deviceId()},false);
-      document.getElementById('portalPassword').value='';saveSession({token:result.token,expiresAt:result.expiresAt,user:result.user});await loadBootstrap(false);
+      document.getElementById('portalPassword').value='';saveSession({token:result.token,expiresAt:result.expiresAt,user:result.user});activateSessionShell(result.user,'تم تسجيل الدخول • جارٍ تحميل أحدث التقارير...');void loadBootstrap(false);
     }catch(err){error.textContent=err.message||'تعذر تسجيل الدخول.'}finally{button.disabled=false}
   }
   async function logout(){
@@ -65,6 +65,13 @@
     let badge=document.getElementById('portalSessionBadge');if(badge)return;
     badge=document.createElement('div');badge.id='portalSessionBadge';badge.className='portal-session-badge';badge.innerHTML='<span id="portalSessionName"></span><button class="portal-logout" type="button">تسجيل الخروج</button>';
     badge.querySelector('button').addEventListener('click',logout);document.querySelector('.top')?.appendChild(badge);
+  }
+  function activateSessionShell(user,statusText){
+    if(!user)return;
+    session.user=user;saveSession(session);installSessionHeader();
+    const name=document.getElementById('portalSessionName');if(name)name.textContent=user.username;
+    applyPermissions();if(user.role==='owner'&&!document.getElementById('portalUserFormTitle'))renderAdminShell();hideGate();
+    const status=document.getElementById('sourceStatus');if(status&&statusText)status.textContent=statusText;
   }
   function installHooks(){
     window.applyRolePermissions=applyPermissions;
@@ -100,7 +107,7 @@
   }
   async function loadBootstrap(silent){
     try{
-      const result=await request('webBootstrap',{});session.user=result.user;saveSession(session);window.applyCloudBootstrap(result);window.applyLocalConfig({cloudEndpoint:CONFIG.endpoint,liveIntervalMinutes:1},{name:result.user.username,email:result.user.username,role:result.user.role},[]);installSessionHeader();document.getElementById('portalSessionName').textContent=result.user.username;applyPermissions();if(result.user.role==='owner')renderAdminShell();hideGate();window.startPortableLive?.();if(!silent)window.toast('تم تسجيل الدخول بنجاح');return result;
+      const result=await request('webBootstrap',{});session.user=result.user;saveSession(session);window.applyCloudBootstrap(result);window.applyLocalConfig({cloudEndpoint:CONFIG.endpoint,liveIntervalMinutes:1},{name:result.user.username,email:result.user.username,role:result.user.role},[]);activateSessionShell(result.user);window.startPortableLive?.();if(!silent)window.toast('تم تحميل التقارير بنجاح');return result;
     }catch(err){
       const message=err.message||'تعذر الاتصال بخدمة Wareed.';
       if(isSessionFailure(err)){
@@ -141,7 +148,8 @@
   async function deleteUser(username){if(!confirm('حذف المستخدم '+username+' نهائيًا؟'))return;try{await request('webDeleteUser',{username});window.toast('تم حذف المستخدم');await loadUsers()}catch(err){window.toast(err.message)}}
   async function start(){
     injectGate();installHooks();session=readSession();
-    if(session?.token){await loadBootstrap(true);return}
+    if(session?.token&&(!session.expiresAt||Date.parse(session.expiresAt)>Date.now())){activateSessionShell(session.user,'جارٍ تحديث أحدث التقارير...');void loadBootstrap(true);return}
+    if(session?.token)saveSession(null);
     showGate('');
   }
   window.WareedPortal={start,request,logout,loadUsers,renderUsers,editUser,deleteUser,saveUser,resetUserForm,permissions,canView,canAction};
