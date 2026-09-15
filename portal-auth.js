@@ -2,6 +2,8 @@
   'use strict';
   const CONFIG=window.WAREED_PORTAL_CONFIG||{};
   const SESSION_KEY='wareedBiWebSessionV1';
+  const DIAGNOSTICS_KEY='wareedDiagnostics';
+  const DIAGNOSTICS_LIMIT=60;
   const VIEW_LABELS={home:'الرئيسية',executive:'التقرير التنفيذي',daily:'التقرير اليومي',salesComparison:'مركز المقارنات',monthly:'التقرير الشهري',reservations:'تقرير الحجوزات',archive:'التقارير السابقة',send:'إرسال تقرير',recipients:'مستلمو التقارير',diagnostics:'التشخيص',settings:'الإعدادات'};
   const ACTION_LABELS={refresh:'تحديث البيانات',sendReport:'إرسال التقارير',download:'تنزيل التقارير',archive:'طلب التقارير السابقة',manageRecipients:'إدارة المستلمين',manageAutomation:'إدارة الجدولة',diagnostics:'عرض التشخيص'};
   const ACTION_MAP={appBootstrap:'webBootstrap',appSendReport:'webSendReport',appSendStatus:'webSendStatus',appRefreshReport:'webRefreshReport',appArchiveReport:'webArchiveReport',appArchiveContent:'webArchiveContent',appRecipientChange:'webRecipientChange',appSaveAutomation:'webSaveAutomation'};
@@ -9,18 +11,67 @@
   let users=[];
   let originalPortableCall=null;
   let userFormTouched=false;
+  let usersLoadPromise=null;
+  let usersLoadedAt=0;
+
+  function diagnostics(){try{const value=JSON.parse(localStorage.getItem(DIAGNOSTICS_KEY)||'[]');return Array.isArray(value)?value:[]}catch(_){return []}}
+  function redactDiagnosticText(value){
+    return String(value??'')
+      .replace(/("?(?:password|token|appKey|authorization)"?\s*[:=]\s*")([^"]*)/gi,'$1[hidden]')
+      .replace(/([?&](?:token|appKey|code)=)[^&\s]+/gi,'$1[hidden]')
+      .replace(/(Bearer\s+)[A-Za-z0-9._~-]+/gi,'$1[hidden]')
+      .slice(0,900);
+  }
+  function endpointLabel(){try{const url=new URL(String(CONFIG.endpoint||''),location.href);return url.origin+url.pathname}catch(_){return 'غير مهيأ'}}
+  function recordDiagnostic(level,code,message,details){
+    const item={at:new Date().toISOString(),level:level||'error',code:code||'WEB-UNKNOWN',message:redactDiagnosticText(message||'حدث خطأ في نسخة الويب'),details:redactDiagnosticText(details||'')};
+    const items=diagnostics();
+    const last=items[items.length-1];
+    if(last&&last.code===item.code&&last.message===item.message&&Date.now()-Date.parse(last.at||0)<30000)items[items.length-1]=item;else items.push(item);
+    const limited=items.slice(-DIAGNOSTICS_LIMIT);
+    try{localStorage.setItem(DIAGNOSTICS_KEY,JSON.stringify(limited))}catch(_){}
+    if(typeof window.onDiagnostic==='function')window.onDiagnostic(item);
+    return item;
+  }
+  function requestError(message,meta){const error=new Error(message);Object.assign(error,meta||{});return error}
+  function requestCode(action,suffix){const name=String(action||'REQUEST').replace(/^web/i,'').replace(/([a-z])([A-Z])/g,'$1-$2').replace(/[^A-Za-z0-9]+/g,'-').replace(/^-+|-+$/g,'').toUpperCase()||'REQUEST';return 'WEB-'+name+'-'+suffix}
 
   function readSession(){try{const value=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');return value&&value.token?value:null}catch(_){return null}}
   function saveSession(value){session=value;if(value)localStorage.setItem(SESSION_KEY,JSON.stringify(value));else localStorage.removeItem(SESSION_KEY)}
   function deviceId(){let id=localStorage.getItem('wareedBiDeviceId');if(!id){id='web-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);localStorage.setItem('wareedBiDeviceId',id)}return id}
   async function request(action,payload,withToken=true){
-    if(!CONFIG.endpoint)throw new Error('رابط خدمة Wareed غير مهيأ.');
+    if(!CONFIG.endpoint){
+      const error=requestError('رابط خدمة Wareed غير مهيأ.',{code:'WEB-CONFIG-ENDPOINT-MISSING',diagnosticRecorded:true});
+      recordDiagnostic('error',error.code,error.message,'لم يتم العثور على رابط Google Apps Script في إعدادات النسخة المستضافة.');
+      throw error;
+    }
     const body={action,...(payload||{})};
     if(withToken&&session?.token)body.token=session.token;
-    const response=await fetch(CONFIG.endpoint,{method:'POST',redirect:'follow',cache:'no-store',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)});
+    const started=Date.now(),controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),30000);let response;
+    try{
+      response=await fetch(CONFIG.endpoint,{method:'POST',redirect:'follow',cache:'no-store',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body),signal:controller.signal});
+    }catch(cause){
+      const timedOut=cause?.name==='AbortError',code=requestCode(action,timedOut?'TIMEOUT':'NETWORK');
+      const message=timedOut?'انتهت مهلة اتصال خدمة Wareed بعد 30 ثانية.':'تعذر الوصول إلى خدمة Wareed: '+String(cause?.message||'فشل اتصال الشبكة');
+      const error=requestError(message,{code,diagnosticRecorded:true,cause});
+      recordDiagnostic('error',code,message,'العملية: '+action+' • الاتصال بالإنترنت: '+(navigator.onLine?'متاح':'غير متاح')+' • الرابط: '+endpointLabel());
+      throw error;
+    }finally{clearTimeout(timeout)}
     const text=await response.text();let result;
-    try{result=JSON.parse(text)}catch(_){throw new Error('تعذر قراءة رد خدمة Wareed.');}
-    if(!response.ok||result.ok!==true)throw new Error(result.error||'تعذر الاتصال بخدمة Wareed.');
+    try{result=JSON.parse(text)}catch(_){
+      const code=requestCode(action,'INVALID-RESPONSE');
+      const message='وصل رد غير مفهوم من خدمة Wareed (HTTP '+response.status+').';
+      const error=requestError(message,{code,diagnosticRecorded:true,httpStatus:response.status});
+      recordDiagnostic('error',code,message,'العملية: '+action+' • نوع الرد: '+String(response.headers.get('content-type')||'غير معروف')+' • المدة: '+(Date.now()-started)+'ms • بداية الرد: '+redactDiagnosticText(text.slice(0,240)));
+      throw error;
+    }
+    if(!response.ok||result.ok!==true){
+      const code=String(result.code||requestCode(action,response.ok?'SERVICE':'HTTP-'+response.status));
+      const message=String(result.error||('تعذر الاتصال بخدمة Wareed (HTTP '+response.status+').'));
+      const error=requestError(message,{code,diagnosticRecorded:true,httpStatus:response.status});
+      recordDiagnostic(response.status>=500?'error':'warning',code,message,'العملية: '+action+' • HTTP: '+response.status+' • المدة: '+(Date.now()-started)+'ms • وقت الخادم: '+String(result.serverTime||'غير متاح'));
+      throw error;
+    }
     return result;
   }
   function isSessionFailure(error){
@@ -70,7 +121,7 @@
     if(!user)return;
     session.user=user;saveSession(session);installSessionHeader();
     const name=document.getElementById('portalSessionName');if(name)name.textContent=user.username;
-    applyPermissions();if(user.role==='owner'&&!document.getElementById('portalUserFormTitle'))renderAdminShell();hideGate();
+    applyPermissions();if(user.role==='owner'){if(!document.getElementById('portalUserFormTitle'))renderAdminShell();void loadUsers()}hideGate();
     const status=document.getElementById('sourceStatus');if(status&&statusText)status.textContent=statusText;
   }
   function installHooks(){
@@ -87,7 +138,11 @@
       if(name==='requestArchive'&&!canAction('archive'))return window.toast('لا تملك صلاحية طلب الأرشيف');
       if(name==='exportReport'&&!canAction('download'))return window.toast('لا تملك صلاحية التنزيل');
       if(name==='manageCloud')return handleManageCloud(arg);
-      if(name==='clearDiagnostics'){localStorage.removeItem('wareedDiagnostics');return window.renderDiagnostics()}
+      if(name==='clearDiagnostics'){
+        localStorage.removeItem(DIAGNOSTICS_KEY);
+        window.applyLocalConfig?.({cloudEndpoint:CONFIG.endpoint,liveIntervalMinutes:1},{name:session?.user?.username||'',email:session?.user?.username||'',role:session?.user?.role||'user'},[]);
+        return;
+      }
       return originalPortableCall?originalPortableCall(name,arg):undefined;
     };
   }
@@ -107,15 +162,16 @@
   }
   async function loadBootstrap(silent){
     try{
-      const result=await request('webBootstrap',{});session.user=result.user;saveSession(session);window.applyCloudBootstrap(result);window.applyLocalConfig({cloudEndpoint:CONFIG.endpoint,liveIntervalMinutes:1},{name:result.user.username,email:result.user.username,role:result.user.role},[]);activateSessionShell(result.user);window.startPortableLive?.();if(!silent)window.toast('تم تحميل التقارير بنجاح');return result;
+      const result=await request('webBootstrap',{});session.user=result.user;saveSession(session);window.applyCloudBootstrap(result);window.applyLocalConfig({cloudEndpoint:CONFIG.endpoint,liveIntervalMinutes:1},{name:result.user.username,email:result.user.username,role:result.user.role},diagnostics());activateSessionShell(result.user);window.startPortableLive?.();if(!silent)window.toast('تم تحميل التقارير بنجاح');return result;
     }catch(err){
       const message=err.message||'تعذر الاتصال بخدمة Wareed.';
+      if(!err.diagnosticRecorded)recordDiagnostic('error',err.code||'WEB-BOOTSTRAP-FAILED',message,'فشل تحميل بيانات الداشبورد بعد التحقق من الجلسة.');
       if(isSessionFailure(err)){
         saveSession(null);clearInterval(window.PORTABLE_LIVE_TIMER);showGate(message);
       }else if(document.body.classList.contains('portal-locked')){
         showGate(message+' الجلسة محفوظة؛ أعد تحميل الصفحة للمحاولة مرة أخرى.');
       }else{
-        const status=document.getElementById('sourceStatus');if(status)status.textContent='تعذر التحديث مؤقتًا — ستتم المحاولة تلقائيًا';
+        const status=document.getElementById('sourceStatus');if(status)status.textContent='تعذر التحديث: '+message+' — ستتم المحاولة تلقائيًا';
       }
       return null;
     }
@@ -128,7 +184,21 @@
     section.querySelectorAll('#portalUserName,#portalUserPassword,#portalUserEnabled,[name=portalView],[name=portalAction]').forEach(node=>node.addEventListener('input',()=>{userFormTouched=true}));
     resetUserForm();
   }
-  async function loadUsers(){try{const result=await request('webListUsers',{});users=result.users||[];renderUsers()}catch(err){window.toast(err.message)}}
+  async function loadUsers(force=false){
+    if(session?.user?.role!=='owner')return [];
+    if(!force&&users.length&&Date.now()-usersLoadedAt<30000){renderUsers();return users}
+    if(usersLoadPromise)return usersLoadPromise;
+    const body=document.getElementById('portalUsersBody');if(body&&!users.length)body.innerHTML='<tr><td colspan="7">جارٍ تحميل المستخدمين والصلاحيات...</td></tr>';
+    usersLoadPromise=(async()=>{
+      try{const result=await request('webListUsers',{});users=result.users||[];usersLoadedAt=Date.now();renderUsers();return users}
+      catch(err){
+        if(!err.diagnosticRecorded)recordDiagnostic('error',err.code||'WEB-USERS-LOAD-FAILED',err.message||'تعذر تحميل المستخدمين.','تعذر قراءة قائمة المستخدمين والصلاحيات من BI Web Users.');
+        const target=document.getElementById('portalUsersBody');if(target)target.innerHTML='<tr><td colspan="7">تعذر تحميل المستخدمين: '+window.escapeHtml(err.message||'خطأ غير معروف')+' <button class="soft" type="button" onclick="WareedPortal.loadUsers()">إعادة المحاولة</button></td></tr>';
+        window.toast(err.message);return [];
+      }finally{usersLoadPromise=null}
+    })();
+    return usersLoadPromise;
+  }
   function renderUsers(){
     const body=document.getElementById('portalUsersBody');if(!body)return;
     document.getElementById('portalUsersCount').textContent=users.length;
@@ -143,9 +213,9 @@
   async function saveUser(){
     const message=document.getElementById('portalUserMessage');if(!userFormTouched){message.textContent='لم يتم إجراء أي تغيير.';return}message.textContent='جارٍ الحفظ...';
     const user={id:document.getElementById('portalUserId').value,username:document.getElementById('portalUserName').value.trim(),password:document.getElementById('portalUserPassword').value,enabled:document.getElementById('portalUserEnabled').checked,permissions:{views:[...document.querySelectorAll('[name=portalView]:checked')].map(node=>node.value),actions:[...document.querySelectorAll('[name=portalAction]:checked')].map(node=>node.value)}};
-    try{const previousUsername=session.user.username;const result=await request('webUpsertUser',{user});document.getElementById('portalUserPassword').value='';if(result.user.id===session.user.id&&(user.password||result.user.username!==previousUsername)){saveSession(null);clearInterval(window.PORTABLE_LIVE_TIMER);showGate('تم تحديث حساب المالك. سجّل الدخول بالبيانات الجديدة.');return}message.textContent='تم حفظ '+result.user.username;resetUserForm();await loadUsers()}catch(err){message.textContent=err.message}
+    try{const previousUsername=session.user.username;const result=await request('webUpsertUser',{user});document.getElementById('portalUserPassword').value='';if(result.user.id===session.user.id&&(user.password||result.user.username!==previousUsername)){saveSession(null);clearInterval(window.PORTABLE_LIVE_TIMER);showGate('تم تحديث حساب المالك. سجّل الدخول بالبيانات الجديدة.');return}message.textContent='تم حفظ '+result.user.username;resetUserForm();await loadUsers(true)}catch(err){message.textContent=err.message}
   }
-  async function deleteUser(username){if(!confirm('حذف المستخدم '+username+' نهائيًا؟'))return;try{await request('webDeleteUser',{username});window.toast('تم حذف المستخدم');await loadUsers()}catch(err){window.toast(err.message)}}
+  async function deleteUser(username){if(!confirm('حذف المستخدم '+username+' نهائيًا؟'))return;try{await request('webDeleteUser',{username});window.toast('تم حذف المستخدم');await loadUsers(true)}catch(err){window.toast(err.message)}}
   async function start(){
     injectGate();installHooks();session=readSession();
     if(session?.token&&(!session.expiresAt||Date.parse(session.expiresAt)>Date.now())){activateSessionShell(session.user,'جارٍ تحديث أحدث التقارير...');void loadBootstrap(true);return}
