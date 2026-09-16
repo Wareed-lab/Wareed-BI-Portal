@@ -4,7 +4,7 @@
   const SESSION_KEY='wareedBiWebSessionV1';
   const DIAGNOSTICS_KEY='wareedDiagnostics';
   const DIAGNOSTICS_LIMIT=60;
-  const VIEW_LABELS={home:'الرئيسية',executive:'التقرير التنفيذي',daily:'التقرير اليومي',salesComparison:'مركز المقارنات',monthly:'التقرير الشهري',reservations:'تقرير الحجوزات',archive:'التقارير السابقة',send:'إرسال تقرير',recipients:'مستلمو التقارير',diagnostics:'التشخيص',settings:'الإعدادات'};
+  const VIEW_LABELS={home:'الرئيسية',executive:'التقرير التنفيذي',daily:'التقرير اليومي',salesComparison:'مركز المقارنات',ai:'Wareed AI',monthly:'التقرير الشهري',reservations:'تقرير الحجوزات',archive:'التقارير السابقة',send:'إرسال تقرير',recipients:'مستلمو التقارير',diagnostics:'التشخيص',settings:'الإعدادات'};
   const ACTION_LABELS={refresh:'تحديث البيانات',sendReport:'إرسال التقارير',download:'تنزيل التقارير',archive:'طلب التقارير السابقة',manageRecipients:'إدارة المستلمين',manageAutomation:'إدارة الجدولة',diagnostics:'عرض التشخيص'};
   const ACTION_MAP={appBootstrap:'webBootstrap',appSendReport:'webSendReport',appSendStatus:'webSendStatus',appRefreshReport:'webRefreshReport',appArchiveReport:'webArchiveReport',appArchiveContent:'webArchiveContent',appRecipientChange:'webRecipientChange',appSaveAutomation:'webSaveAutomation'};
   let session=null;
@@ -104,6 +104,12 @@
   function permissions(){return session?.user?.permissions||{views:[],actions:[]}}
   function canView(view){return session?.user?.role==='owner'||permissions().views?.includes(view)}
   function canAction(action){return session?.user?.role==='owner'||permissions().actions?.includes(action)}
+  async function askAi(question,history){
+    if(!canView('ai'))throw new Error('لا تملك صلاحية استخدام Wareed AI.');
+    const cleanHistory=(Array.isArray(history)?history:[]).slice(-6).map(item=>({role:item?.role==='assistant'?'assistant':'user',text:String(item?.text||'').slice(0,700)}));
+    try{return await request('webAskAi',{question:String(question||'').slice(0,600),history:cleanHistory})}
+    catch(error){if(!error.diagnosticRecorded)recordDiagnostic('error',error.code||'WEB-AI-FAILED',error.message||'تعذر تشغيل Wareed AI.','فشل طلب التحليل للمستخدم '+String(session?.user?.username||''));throw error}
+  }
   function applyPermissions(){
     document.querySelectorAll('.nav[data-page]').forEach(node=>{const page=node.dataset.page;node.hidden=page==='users'?session?.user?.role!=='owner':!canView(page)});
     document.querySelectorAll('[data-owner-only]').forEach(node=>{if(node.matches('[data-page]'))return;node.hidden=session?.user?.role!=='owner'});
@@ -222,5 +228,5 @@
     if(session?.token)saveSession(null);
     showGate('');
   }
-  window.WareedPortal={start,request,logout,loadUsers,renderUsers,editUser,deleteUser,saveUser,resetUserForm,permissions,canView,canAction};
+  window.WareedPortal={start,request,logout,loadUsers,renderUsers,editUser,deleteUser,saveUser,resetUserForm,permissions,canView,canAction,askAi};
 })();

@@ -59,14 +59,19 @@
 @media(max-width:720px){.compare-controls{grid-template-columns:1fr 1fr}.compare-actions{display:grid;grid-template-columns:1fr 1fr}.compare-grid,.recommendation-grid{grid-template-columns:1fr}.compare-kpis{grid-template-columns:1fr 1fr}.pair-row{grid-template-columns:105px minmax(0,1fr)}.swing-row{grid-template-columns:105px minmax(0,1fr) 66px}.compare-insights{grid-template-columns:48px minmax(0,1fr)}.compare-insights strong{width:48px;height:48px;font-size:20px}.recommendation-lane{grid-template-columns:94px minmax(0,1fr)}}
 @media(max-width:430px){.compare-controls{grid-template-columns:1fr}.date-calendar{font-size:16px!important}}
 </style>
+<style id="wareed-ai-styles">
+.wareed-ai-layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(250px,1fr);gap:11px;margin-top:11px}.wareed-ai-chat,.wareed-ai-side{min-width:0;border-radius:18px;background:#fff;box-shadow:0 5px 17px #26384d0e}.wareed-ai-chat{display:flex;flex-direction:column;min-height:610px;overflow:hidden}.wareed-ai-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #e6ecef}.wareed-ai-mark{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#54215f,#173d68);color:#fff;font-size:21px}.wareed-ai-head div{flex:1}.wareed-ai-head b{display:block;font-size:14px}.wareed-ai-head small{display:block;margin-top:3px;color:var(--muted);font-size:9px}.wareed-ai-live{padding:5px 8px;border-radius:12px;background:#e2f6ec;color:#08754d;font-size:8px;font-weight:bold}.wareed-ai-messages{display:flex;flex:1;flex-direction:column;gap:10px;min-height:360px;max-height:520px;padding:16px;overflow-y:auto;scroll-behavior:smooth}.wareed-ai-message{max-width:min(84%,760px);padding:11px 13px;border-radius:16px;font-size:11px;line-height:1.85;overflow-wrap:anywhere}.wareed-ai-message.assistant{align-self:flex-start;border-bottom-right-radius:5px;background:#eef4f8;color:#263a48}.wareed-ai-message.user{align-self:flex-end;border-bottom-left-radius:5px;background:linear-gradient(135deg,#173d68,#54215f);color:#fff}.wareed-ai-message.loading{opacity:.72}.wareed-ai-message small{display:block;margin-top:7px;padding-top:6px;border-top:1px solid #8b99a629;color:inherit;font-size:8px}.wareed-ai-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:12px;border-top:1px solid #e6ecef;background:#f8fafb}.wareed-ai-form textarea{width:100%;min-height:54px;max-height:130px;padding:11px;border:1px solid #cbd6df;border-radius:13px;resize:vertical;font-family:inherit;font-size:12px}.wareed-ai-form button{min-width:94px;border:0;border-radius:13px;background:var(--p);color:#fff;font-weight:bold;cursor:pointer}.wareed-ai-form button:disabled{opacity:.55;cursor:wait}.wareed-ai-side{align-self:start;padding:14px}.wareed-ai-side h2{margin:0;font-size:16px}.wareed-ai-side>p{margin:5px 0 11px;color:var(--muted);font-size:9px;line-height:1.7}.wareed-ai-prompts{display:grid;gap:7px}.wareed-ai-prompt{width:100%;padding:10px;border:1px solid #dbe4e9;border-radius:12px;background:#f7fafb;color:var(--n);text-align:right;font-size:10px;font-weight:bold;line-height:1.6;cursor:pointer}.wareed-ai-prompt:hover{border-color:#25b6c8;background:#eef9fb}.wareed-ai-scope{margin-top:13px;padding:11px;border-radius:13px;background:linear-gradient(145deg,#f7f2f8,#eef5f9)}.wareed-ai-scope b{display:block;font-size:10px}.wareed-ai-scope span{display:block;margin-top:5px;color:#536571;font-size:9px;line-height:1.7}.wareed-ai-note{margin-top:10px;color:var(--muted);font-size:8px;line-height:1.7}.wareed-ai-note strong{color:var(--n)}
+@media(max-width:800px){.wareed-ai-layout{grid-template-columns:1fr}.wareed-ai-chat{min-height:540px}.wareed-ai-side{order:-1}.wareed-ai-prompts{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.wareed-ai-prompts{grid-template-columns:1fr}.wareed-ai-message{max-width:94%;font-size:11px}.wareed-ai-form{grid-template-columns:1fr}.wareed-ai-form textarea{font-size:16px}.wareed-ai-form button{min-height:46px}}
+</style>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <link rel="preconnect" href="https://script.google.com" crossorigin>
 <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
 <link rel="dns-prefetch" href="//script.google.com">
 <link rel="dns-prefetch" href="//script.googleusercontent.com">
-<link rel="stylesheet" href="portal.css?v=16746d33bfdc">
-<script src="runtime-config.js?v=16746d33bfdc"></script>
-<script src="portal-auth.js?v=16746d33bfdc"></script>
+<link rel="stylesheet" href="portal.css?v=e6663d475851">
+<script src="runtime-config.js?v=e6663d475851"></script>
+<script src="portal-auth.js?v=e6663d475851"></script>
 </head>
 <body class="portal-locked">
 <header class="top">
@@ -81,6 +86,7 @@
   <button class="nav" data-page="executive" onclick="go('executive',this)">التقرير التنفيذي</button>
   <button class="nav" data-page="daily" onclick="go('daily',this)">التقرير اليومي</button>
   <button class="nav" data-page="salesComparison" onclick="go('salesComparison',this)">مركز المقارنات</button>
+  <button class="nav" data-page="ai" onclick="go('ai',this)">✦ Wareed AI</button>
   <button class="nav" data-page="monthly" onclick="go('monthly',this)">التقرير الشهري</button>
   <button class="nav" data-page="reservations" onclick="go('reservations',this)">تقرير الحجوزات</button>
   <button class="nav" data-page="send" data-owner-only onclick="go('send',this)">إرسال تقرير</button>
@@ -117,7 +123,20 @@
         <article class="report-card" onclick="go('monthly')"><b>التقرير الشهري</b><small>الإيراد والتارجت والمتبقي ونسبته</small><span class="badge">جاهز</span></article>
         <article class="report-card" onclick="go('reservations')"><b>تقرير الحجوزات</b><small>المواعيد والفروع والموظفون في جداول مرتبة</small><span class="badge">جاهز</span></article>
         <article class="report-card" onclick="go('salesComparison')"><b>مقارنات الأداء</b><small>اليوم مقابل أمس أو الأسبوع الماضي في الوقت نفسه</small><span class="badge">جديد</span></article>
+        <article class="report-card" onclick="go('ai')"><b>✦ Wareed AI</b><small>اسأل عن الفروع والمبيعات والحجوزات حسب صلاحيتك</small><span class="badge">ذكي</span></article>
       </div>
+    </div>
+  </section>
+
+  <section id="ai" class="page">
+    <div class="hero"><h1>✦ Wareed AI</h1><p>مساعد وريد التحليلي — يجيب من آخر بيانات فعلية وبحسب صلاحيات حسابك</p></div>
+    <div class="wareed-ai-layout">
+      <div class="wareed-ai-chat">
+        <div class="wareed-ai-head"><span class="wareed-ai-mark">W</span><div><b>مساعد الأداء الخاص بوريد</b><small id="wareedAiUpdated">متصل ببيانات الداشبورد المصرح بها</small></div><span class="wareed-ai-live">خاص وآمن</span></div>
+        <div id="wareedAiMessages" class="wareed-ai-messages" aria-live="polite"><div class="wareed-ai-message assistant">أهلًا، أنا Wareed AI. اسألني مثلًا: أي فرع يحتاج تركيزي اليوم؟ أو من أفضل موظف في حجوزات هذا الشهر؟<small>سأذكر تاريخ البيانات ومعيار الاختيار في كل إجابة.</small></div></div>
+        <form class="wareed-ai-form" onsubmit="askWareedAi(event)"><textarea id="wareedAiQuestion" maxlength="600" placeholder="اكتب سؤالك عن أداء وريد…" aria-label="سؤال Wareed AI"></textarea><button id="wareedAiSend" type="submit">اسأل Wareed AI</button></form>
+      </div>
+      <aside class="wareed-ai-side"><h2>أسئلة جاهزة</h2><p>اختر سؤالًا أو اكتب سؤالك بطريقتك.</p><div class="wareed-ai-prompts"><button class="wareed-ai-prompt" type="button" onclick="askWareedAi(null,'أي فرع أركز عليه اليوم؟ ولماذا؟')">أي فرع أركز عليه اليوم؟</button><button class="wareed-ai-prompt" type="button" onclick="askWareedAi(null,'من أفضل موظف في خدمة العملاء بالحجوزات هذا الشهر؟')">أفضل موظف حجوزات هذا الشهر</button><button class="wareed-ai-prompt" type="button" onclick="askWareedAi(null,'ما الفروع التي انخفض أداؤها اليوم وتحتاج تدخلًا؟')">الفروع التي تحتاج تدخلًا</button><button class="wareed-ai-prompt" type="button" onclick="askWareedAi(null,'أعطني ملخص أداء اليوم مع أهم ثلاث ملاحظات عملية')">ملخص أداء اليوم</button></div><div class="wareed-ai-scope"><b>نطاق بياناتك</b><span id="wareedAiScope">يتم تحديده من صلاحيات حسابك.</span></div><p class="wareed-ai-note"><strong>الخصوصية:</strong> لا يرى المساعد إلا التقارير التي منحها لك الأدمن. تعديل تصميم الداشبورد أو أي إجراء تنفيذي يبقى محصورًا بالأدمن وبعد تأكيده.</p></aside>
     </div>
   </section>
 
@@ -346,10 +365,23 @@ const targetDefaultMark=value=>value?'<span class="target-default-mark" aria-hid
 function nativeCall(name,arg){try{if(window.WareedNative&&typeof WareedNative[name]==='function'){if(arguments.length>1)WareedNative[name](arg);else WareedNative[name]();return}portableCall(name,arg)}catch(error){toast('تعذر تنفيذ الأمر')}}
 let CURRENT_PAGE='home';
 function drawer(open){document.getElementById('drawer').classList.toggle('open',open);document.getElementById('shade').classList.toggle('show',open)}
-function go(id,button){if(document.querySelector('[data-owner-only][data-page="'+id+'"]')?.hidden)return;CURRENT_PAGE=id;document.querySelectorAll('.page').forEach(page=>page.classList.toggle('active',page.id===id));document.querySelectorAll('.nav').forEach(nav=>nav.classList.toggle('active',nav.dataset.page===id));drawer(false);scrollTo({top:0,left:0,behavior:'instant'});if(id==='executive')setTimeout(()=>{if(typeof fitStreetMapBounds==='function')fitStreetMapBounds()},80);nativeCall('pageChanged',id)}
+function go(id,button){if(document.querySelector('[data-owner-only][data-page="'+id+'"]')?.hidden)return;CURRENT_PAGE=id;document.querySelectorAll('.page').forEach(page=>page.classList.toggle('active',page.id===id));document.querySelectorAll('.nav').forEach(nav=>nav.classList.toggle('active',nav.dataset.page===id));drawer(false);scrollTo({top:0,left:0,behavior:'instant'});if(id==='executive')setTimeout(()=>{if(typeof fitStreetMapBounds==='function')fitStreetMapBounds()},80);if(id==='ai'){renderWareedAiScope();setTimeout(()=>document.getElementById('wareedAiQuestion')?.focus(),80)}nativeCall('pageChanged',id)}
 function toast(message){const view=document.getElementById('toast');view.textContent=message;view.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>view.classList.remove('show'),2600)}
-function refreshData(){document.getElementById('sourceStatus').textContent='جارٍ التحديث';const report=CURRENT_PAGE==='salesComparison'?'daily':CURRENT_PAGE;nativeCall('refreshReport',report);toast('أُرسل طلب التحديث إلى عامل Wareed لحفظه في Google Sheets')}
+function refreshData(){document.getElementById('sourceStatus').textContent='جارٍ التحديث';const report=CURRENT_PAGE==='salesComparison'?'daily':CURRENT_PAGE==='ai'?'executive':CURRENT_PAGE;nativeCall('refreshReport',report);toast('أُرسل طلب التحديث إلى عامل Wareed لحفظه في Google Sheets')}
 function exportReport(type){nativeCall('exportReport',type);toast('جارٍ تجهيز ملف التقرير')}
+const WAREED_AI_HISTORY=[];
+let WAREED_AI_BUSY=false;
+function renderWareedAiScope(){
+  const target=document.getElementById('wareedAiScope'),updated=document.getElementById('wareedAiUpdated');if(!target)return;const views=window.WareedPortal?.permissions?.().views||[],labels={home:'الملخص',executive:'التنفيذي والفروع',daily:'المبيعات اليومية',salesComparison:'المقارنات',monthly:'المبيعات الشهرية',reservations:'الحجوزات'},allowed=views.filter(view=>labels[view]).map(view=>labels[view]);target.textContent=allowed.length?allowed.join(' • '):'لا توجد تقارير تحليلية مضافة إلى صلاحياتك.';if(updated)updated.textContent='آخر تحديث للبيانات: '+reportStamp(DATA.generatedAt||DATA.updatedAt||DATA.daily?.capturedAt||DATA.reservations?.capturedAt);
+}
+function wareedAiMessage(role,text,meta={}){
+  const messages=document.getElementById('wareedAiMessages');if(!messages)return null;const node=document.createElement('div');node.className='wareed-ai-message '+role+(meta.loading?' loading':'');const details=[];if(meta.asOf)details.push('البيانات حتى '+reportStamp(meta.asOf));if(Array.isArray(meta.sources)&&meta.sources.length)details.push('المصادر: '+meta.sources.join(' • '));if(meta.engine)details.push(meta.engine);node.innerHTML=escapeHtml(String(text||'')).replace(/\n/g,'<br>')+(details.length?'<small>'+escapeHtml(details.join(' — '))+'</small>':'');messages.appendChild(node);messages.scrollTop=messages.scrollHeight;return node;
+}
+async function askWareedAi(event,suggestedQuestion){
+  event?.preventDefault?.();if(WAREED_AI_BUSY)return;const input=document.getElementById('wareedAiQuestion'),button=document.getElementById('wareedAiSend'),question=String(suggestedQuestion||input?.value||'').trim();if(!question){toast('اكتب سؤالك أولًا');input?.focus();return}if(question.length>600){toast('اختصر السؤال إلى 600 حرف');return}
+  WAREED_AI_BUSY=true;if(button){button.disabled=true;button.textContent='يحلل البيانات…'}if(input)input.value='';wareedAiMessage('user',question);const history=WAREED_AI_HISTORY.slice(-6);WAREED_AI_HISTORY.push({role:'user',text:question});const loading=wareedAiMessage('assistant','أراجع آخر بيانات وريد المسموح بها لحسابك…',{loading:true});
+  try{let result;if(window.WareedPortal?.askAi)result=await window.WareedPortal.askAi(question,history);else if(window.portableCloudPost)result=await window.portableCloudPost({action:'webAskAi',question,history});else throw new Error('Wareed AI متاح من خلال نسخة الموقع المسجلة فقط.');loading?.remove();const answer=String(result?.answer||'لم أتمكن من تكوين إجابة من البيانات الحالية.');WAREED_AI_HISTORY.push({role:'assistant',text:answer});wareedAiMessage('assistant',answer,{asOf:result?.asOf,sources:result?.sources,engine:result?.engine})}catch(error){loading?.remove();wareedAiMessage('assistant','تعذر إكمال التحليل الآن: '+String(error?.message||error))}finally{WAREED_AI_BUSY=false;if(button){button.disabled=false;button.textContent='اسأل Wareed AI'}input?.focus()}
+}
 let LOCAL={config:{},profile:{},diagnostics:[],users:[]};
 function safeParse(value,fallback){try{return typeof value==='string'?JSON.parse(value):value||fallback}catch(e){return fallback}}
 let PORTABLE_LIVE_TIMER=null,PORTABLE_REFRESH_RUNNING=false,PORTABLE_RESUME_HOOKS=false;
