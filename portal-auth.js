@@ -47,16 +47,20 @@
     }
     const body={action,...(payload||{})};
     if(withToken&&session?.token)body.token=session.token;
-    const started=Date.now(),controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),30000);let response;
-    try{
-      response=await fetch(CONFIG.endpoint,{method:'POST',redirect:'follow',cache:'no-store',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body),signal:controller.signal});
-    }catch(cause){
-      const timedOut=cause?.name==='AbortError',code=requestCode(action,timedOut?'TIMEOUT':'NETWORK');
-      const message=timedOut?'انتهت مهلة اتصال خدمة Wareed بعد 30 ثانية.':'تعذر الوصول إلى خدمة Wareed: '+String(cause?.message||'فشل اتصال الشبكة');
-      const error=requestError(message,{code,diagnosticRecorded:true,cause});
-      recordDiagnostic('error',code,message,'العملية: '+action+' • الاتصال بالإنترنت: '+(navigator.onLine?'متاح':'غير متاح')+' • الرابط: '+endpointLabel());
+    const started=Date.now(),timeoutMs=action==='webAskAi'?45000:30000,attempts=action==='webAskAi'?2:1;let response,lastCause;
+    for(let attempt=1;attempt<=attempts&&!response;attempt++){
+      const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),timeoutMs);
+      try{response=await fetch(CONFIG.endpoint,{method:'POST',redirect:'follow',cache:'no-store',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body),signal:controller.signal})}
+      catch(cause){lastCause=cause;if(attempt<attempts&&cause?.name!=='AbortError')await new Promise(resolve=>setTimeout(resolve,650))}
+      finally{clearTimeout(timeout)}
+    }
+    if(!response){
+      const timedOut=lastCause?.name==='AbortError',code=requestCode(action,timedOut?'TIMEOUT':'NETWORK');
+      const message=timedOut?'انتهت مهلة اتصال خدمة Wareed بعد '+Math.round(timeoutMs/1000)+' ثانية.':'تعذر الوصول إلى خدمة Wareed: '+String(lastCause?.message||'فشل اتصال الشبكة');
+      const error=requestError(message,{code,diagnosticRecorded:true,cause:lastCause});
+      recordDiagnostic('error',code,message,'العملية: '+action+' • المحاولات: '+attempts+' • الاتصال بالإنترنت: '+(navigator.onLine?'متاح':'غير متاح')+' • الرابط: '+endpointLabel());
       throw error;
-    }finally{clearTimeout(timeout)}
+    }
     const text=await response.text();let result;
     try{result=JSON.parse(text)}catch(_){
       const code=requestCode(action,'INVALID-RESPONSE');
@@ -113,6 +117,7 @@
   function applyPermissions(){
     document.querySelectorAll('.nav[data-page]').forEach(node=>{const page=node.dataset.page;node.hidden=page==='users'?session?.user?.role!=='owner':!canView(page)});
     document.querySelectorAll('[data-owner-only]').forEach(node=>{if(node.matches('[data-page]'))return;node.hidden=session?.user?.role!=='owner'});
+    const aiFab=document.getElementById('wareedAiFab');if(aiFab)aiFab.hidden=!canView('ai');if(!canView('ai'))window.openWareedAiMini?.(false);
     const refresh=document.querySelector('.top .icon[onclick*="refreshData"]');if(refresh)refresh.hidden=!canAction('refresh');
     if(!canView(window.CURRENT_PAGE||'home')){
       const first=(permissions().views||[]).find(view=>document.getElementById(view))||'home';window.go(first);
