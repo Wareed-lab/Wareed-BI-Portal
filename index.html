@@ -14,7 +14,7 @@
 .status{display:flex;align-items:center;gap:5px;padding:7px 9px;border-radius:20px;background:#ffffff17;font-size:10px;white-space:nowrap}.dot{width:8px;height:8px;border-radius:50%;background:var(--y);box-shadow:0 0 0 3px #edbd0024}.status.ok .dot{background:#2bdb9b}.status.bad .dot{background:#ef6760}
 .wrap{width:min(1240px,100%);min-width:0;min-height:100dvh;margin:auto;padding:11px 11px calc(90px + env(safe-area-inset-bottom));overflow-x:hidden;overflow-y:visible}.page{display:none;min-width:0;max-width:100%;padding-bottom:24px;animation:appear .2s ease}.page.active{display:block}@keyframes appear{from{opacity:.2;transform:translateY(5px)}}
 .hero{position:relative;overflow:hidden;padding:21px;border-radius:22px;background:linear-gradient(135deg,#54215f,#173d68);color:#fff;box-shadow:0 10px 26px #293b5a22}.hero:after{content:"";position:absolute;width:160px;height:160px;border:30px solid #ffffff0d;border-radius:50%;left:-60px;top:-70px}.hero h1{font-size:24px;margin:0}.hero p{margin:8px 0 0;color:#dce7f2;font-size:12px}
-.executive-hero-content,.daily-hero-content{position:relative;z-index:1;display:flex;align-items:center;gap:18px}.executive-hero-title,.daily-hero-title{flex:1}.executive-hero-controls{display:flex;align-items:center;justify-content:flex-start;gap:8px;flex-wrap:wrap;max-width:720px}.executive-month-picker{display:flex;align-items:center;justify-content:flex-start;gap:8px;direction:rtl;flex-wrap:wrap}.executive-month-button{min-width:116px;padding:10px 14px;border:1px solid #ffffff58;border-radius:13px;background:#ffffff16;color:#fff;font-size:12px;font-weight:bold;cursor:pointer}.executive-month-button.active{border-color:#f6c814;background:#f6c814;color:#172431;box-shadow:0 5px 16px #0002}.executive-hero-select{min-width:150px;padding:10px 12px;border:1px solid #ffffff62;border-radius:13px;background:#fff;color:var(--ink);font-size:12px;font-weight:bold}.executive-month-note{display:block;margin-top:6px;color:#eef5fb;font-size:9px}.daily-date-field{display:grid;gap:6px;min-width:210px}.daily-date-field label{font-size:10px;color:#dce7f2}.daily-date-field select{width:100%;padding:11px 13px;border:1px solid #ffffff62;border-radius:13px;background:#fff;color:var(--ink);font-weight:bold}
+.executive-hero-content,.daily-hero-content{position:relative;z-index:1;display:flex;align-items:center;gap:18px}.executive-hero-title,.daily-hero-title{flex:1}.executive-hero-controls{display:flex;align-items:center;justify-content:flex-start;gap:8px;flex-wrap:wrap;max-width:720px}.executive-month-picker{display:flex;align-items:center;justify-content:flex-start;gap:8px;direction:rtl;flex-wrap:wrap}.executive-month-button{min-width:116px;padding:10px 14px;border:1px solid #ffffff58;border-radius:13px;background:#ffffff16;color:#fff;font-size:12px;font-weight:bold;cursor:pointer}.executive-month-button.active{border-color:#f6c814;background:#f6c814;color:#172431;box-shadow:0 5px 16px #0002}.executive-hero-select{min-width:150px;padding:10px 12px;border:1px solid #ffffff62;border-radius:13px;background:#fff;color:var(--ink);font-size:12px;font-weight:bold}.executive-month-note{display:block;margin-top:6px;color:#eef5fb;font-size:9px}.daily-date-field{display:grid;gap:6px;min-width:210px}.daily-date-field label{font-size:10px;color:#dce7f2}.daily-date-field select,.daily-date-field input{width:100%;padding:11px 13px;border:1px solid #ffffff62;border-radius:13px;background:#fff;color:var(--ink);font-weight:bold}
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:11px}.metric{background:var(--card);border-radius:17px;padding:14px 9px;text-align:center;border-bottom:4px solid var(--g);box-shadow:0 5px 17px #26384d10}.metric:nth-child(2n){border-color:var(--y)}.metric:nth-child(3n){border-color:var(--c)}.metric:nth-child(4n){border-color:var(--p)}.metric span{display:block;color:var(--muted);font-size:11px}.metric b{display:block;margin-top:7px;font-size:21px;direction:ltr}
 .executive-metrics{grid-template-columns:repeat(5,minmax(0,1fr))}.metric-forecast{min-height:0;padding:11px 7px;border-color:#76508c;background:linear-gradient(145deg,#fff,#f5eef7)}.metric-forecast span{font-size:9px;font-weight:bold;color:var(--p)}.metric-forecast b{font-size:18px}.metric-forecast small{display:block;min-height:22px;margin-top:5px;color:var(--muted);font-size:8px;line-height:1.45}
 .section{background:var(--card);border-radius:18px;padding:14px;margin-top:11px;box-shadow:0 5px 17px #26384d0e}.section-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}.section-head h2{flex:1;margin:0;font-size:18px}.subtle{color:var(--muted);font-size:11px}
@@ -46,7 +46,7 @@
 @media(min-width:900px){.wrap{padding:18px}.hero{padding:27px}.metric{min-height:104px}.report-card{min-height:128px}.top{padding-left:24px;padding-right:24px}}
 </style>
 <style id="wareed-comparison-styles">
-.compare-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:9px;align-items:end}.compare-controls .field{min-width:0}.compare-report-type{margin-bottom:10px}.compare-report-type select{width:100%;padding:12px;border:1px solid #cbd6df;border-radius:11px;background:#fff}.compare-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.compare-actions .soft{padding:10px 12px}.compare-show{width:100%;margin-top:10px}.compare-match{display:flex;align-items:center;gap:8px;min-height:38px;margin-top:9px;padding:9px 11px;border-radius:11px;background:#f0f5f8;color:#4f606d;font-size:10px;line-height:1.7}.compare-match b{color:var(--n)}.reservation-range-only[hidden]{display:none!important}
+.compare-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:9px;align-items:end}.compare-controls .field{min-width:0}.compare-report-type{margin-bottom:10px}.compare-report-type select{width:100%;padding:12px;border:1px solid #cbd6df;border-radius:11px;background:#fff}.compare-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.compare-actions .soft{padding:10px 12px}.compare-show{width:100%;margin-top:10px}.compare-match{display:flex;align-items:center;gap:8px;min-height:38px;margin-top:9px;padding:9px 11px;border-radius:11px;background:#f0f5f8;color:#4f606d;font-size:10px;line-height:1.7}.compare-match b{color:var(--n)}.reservation-range-only[hidden]{display:none!important}.date-calendar{direction:ltr;text-align:center;font-weight:bold;cursor:pointer;color-scheme:light}.compare-latest-time{width:100%;min-height:29px;margin-top:1px;padding:5px 7px;border:1px solid #cfe1e8;border-radius:9px;background:linear-gradient(135deg,#eef8fb,#f7fbfc);color:#174b68;font-size:8px;font-weight:bold;cursor:pointer}.compare-latest-time:hover{border-color:#25b6c8;background:#e4f7fa}.compare-latest-time[hidden]{display:none!important}
 .compare-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:11px}.compare-kpi{position:relative;overflow:hidden;min-width:0;padding:13px;border:1px solid #e0e8ed;border-radius:15px;background:linear-gradient(145deg,#fff,#f7fafc)}.compare-kpi:before{content:"";position:absolute;right:0;top:0;bottom:0;width:4px;background:var(--c)}.compare-kpi.up:before{background:var(--g)}.compare-kpi.down:before{background:var(--r)}.compare-kpi.neutral:before{background:#8795a0}.compare-kpi span{display:block;color:var(--muted);font-size:10px}.compare-kpi b{display:block;margin-top:6px;font-size:20px;direction:ltr;text-align:right}.compare-kpi small{display:block;margin-top:6px;font-size:9px;direction:ltr;text-align:right}.compare-kpi.up small{color:#08754d}.compare-kpi.down small{color:var(--r)}
 .compare-insights{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center;margin-top:11px;padding:14px;border-radius:16px;background:linear-gradient(135deg,#163f65,#54215f);color:#fff}.compare-insights strong{display:grid;place-items:center;width:58px;height:58px;border-radius:50%;background:#ffffff18;font-size:25px}.compare-insights h3{margin:0 0 5px;font-size:15px}.compare-insights p{margin:0;color:#dce7f2;font-size:10px;line-height:1.9}
 .compare-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:11px}.compare-panel{min-width:0;padding:14px;border-radius:18px;background:#fff;box-shadow:0 5px 17px #26384d0e}.compare-panel h2{margin:0 0 4px;font-size:17px}.compare-panel>p{margin:0 0 12px;color:var(--muted);font-size:9px}.compare-legend{display:flex;gap:12px;margin-bottom:10px;color:var(--muted);font-size:9px;direction:ltr}.compare-legend i{display:inline-block;width:10px;height:10px;margin-right:4px;border-radius:3px}.compare-legend .current{background:#25b6c8}.compare-legend .reference{background:#76508c}
@@ -57,16 +57,16 @@
 .compare-table .up,.swing-row .up{color:#08754d;font-weight:bold}.compare-table .down,.swing-row .down{color:var(--r);font-weight:bold}.compare-table .neutral,.swing-row .neutral{color:#62717d;font-weight:bold}
 @media(max-width:900px){.compare-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:720px){.compare-controls{grid-template-columns:1fr 1fr}.compare-actions{display:grid;grid-template-columns:1fr 1fr}.compare-grid,.recommendation-grid{grid-template-columns:1fr}.compare-kpis{grid-template-columns:1fr 1fr}.pair-row{grid-template-columns:105px minmax(0,1fr)}.swing-row{grid-template-columns:105px minmax(0,1fr) 66px}.compare-insights{grid-template-columns:48px minmax(0,1fr)}.compare-insights strong{width:48px;height:48px;font-size:20px}.recommendation-lane{grid-template-columns:94px minmax(0,1fr)}}
-@media(max-width:430px){.compare-controls{grid-template-columns:1fr}}
+@media(max-width:430px){.compare-controls{grid-template-columns:1fr}.date-calendar{font-size:16px!important}}
 </style>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <link rel="preconnect" href="https://script.google.com" crossorigin>
 <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
 <link rel="dns-prefetch" href="//script.google.com">
 <link rel="dns-prefetch" href="//script.googleusercontent.com">
-<link rel="stylesheet" href="portal.css?v=a78303f5e377">
-<script src="runtime-config.js?v=a78303f5e377"></script>
-<script src="portal-auth.js?v=a78303f5e377"></script>
+<link rel="stylesheet" href="portal.css?v=16746d33bfdc">
+<script src="runtime-config.js?v=16746d33bfdc"></script>
+<script src="portal-auth.js?v=16746d33bfdc"></script>
 </head>
 <body class="portal-locked">
 <header class="top">
@@ -122,7 +122,7 @@
   </section>
 
   <section id="executive" class="page">
-    <div class="hero"><div class="executive-hero-content"><div class="executive-hero-title"><h1>التقرير التنفيذي</h1><p id="executiveUpdated">آخر لقطة مكتملة من Google Sheets: —</p><small id="executiveTargetBasis" class="executive-month-note">التارجت التنفيذي: فهد وريم</small></div><div class="executive-hero-controls"><div id="executiveMonthPicker" class="executive-month-picker" aria-label="اختيار شهر التقرير التنفيذي"></div><select id="heatMetric" class="executive-hero-select" onchange="renderHeatMap()" aria-label="اختيار بيانات الخريطة"><option value="daily" selected>مبيعات اليوم</option><option value="monthly">مبيعات الشهر — تحقيق الهدف %</option><option value="patients">عملاء ACC اليوم</option></select><select id="heatDate" class="executive-hero-select heat-date-select" onchange="selectHeatDate(this.value)" aria-label="اختيار يوم التقرير التنفيذي"></select></div></div></div>
+    <div class="hero"><div class="executive-hero-content"><div class="executive-hero-title"><h1>التقرير التنفيذي</h1><p id="executiveUpdated">آخر لقطة مكتملة من Google Sheets: —</p><small id="executiveTargetBasis" class="executive-month-note">التارجت التنفيذي: فهد وريم</small></div><div class="executive-hero-controls"><div id="executiveMonthPicker" class="executive-month-picker" aria-label="اختيار شهر التقرير التنفيذي"></div><select id="heatMetric" class="executive-hero-select" onchange="renderHeatMap()" aria-label="اختيار بيانات الخريطة"><option value="daily" selected>مبيعات اليوم</option><option value="monthly">مبيعات الشهر — تحقيق الهدف %</option><option value="patients">عملاء ACC اليوم</option></select><input id="heatDate" class="executive-hero-select heat-date-select date-calendar" type="date" lang="ar-SA" onchange="selectHeatDate(this.value)" aria-label="اختيار يوم التقرير التنفيذي"></div></div></div>
     <div class="metrics executive-metrics">
       <div class="metric"><span id="executiveDailyRevenueLabel">مبيعات اليوم</span><b data-exec-key="dailyRevenue">—</b></div>
       <div class="metric"><span id="executiveDailyRateLabel">تحقيق اليوم</span><b data-exec-key="dailyRate">—</b></div>
@@ -159,7 +159,7 @@
   </section>
 
   <section id="daily" class="page">
-    <div class="hero"><div class="daily-hero-content"><div class="daily-hero-title"><h1>التقرير اليومي</h1><p id="dailyUpdated">آخر سحب ناجح من Branch Income: —</p><p id="dailyPeriod">فترة التقرير: —</p></div><div class="daily-date-field"><label for="dailyDate">اختر يوم التقرير</label><select id="dailyDate" onchange="selectDailyDate(this.value)"></select></div></div></div>
+    <div class="hero"><div class="daily-hero-content"><div class="daily-hero-title"><h1>التقرير اليومي</h1><p id="dailyUpdated">آخر سحب ناجح من Branch Income: —</p><p id="dailyPeriod">فترة التقرير: —</p></div><div class="daily-date-field"><label for="dailyDate">اختر يوم التقرير</label><input id="dailyDate" class="date-calendar" type="date" lang="ar-SA" onchange="selectDailyDate(this.value)"></div></div></div>
     <div class="metrics">
       <div class="metric"><span>المبيعات</span><b data-daily-key="dailyRevenue">—</b></div>
       <div class="metric"><span>التارجت</span><b data-daily-key="dailyTarget">—</b></div>
@@ -179,10 +179,10 @@
       <div class="section-head"><h2>اختر التقرير واليومين</h2><span class="pill">بيانات محفوظة فعلية</span></div>
       <div class="field compare-report-type"><label>نوع التقرير</label><select id="comparisonReportType" onchange="comparisonReportTypeChanged(this.value)"><option value="sales">المبيعات اليومية</option><option value="reservations">الحجوزات</option></select></div>
       <div class="compare-controls">
-        <div class="field"><label>التاريخ الذي تريد تحليله</label><select id="centerCompareCurrentDate" onchange="populateComparisonTimes(document.getElementById('comparisonReportType').value,'center','current')"></select></div>
-        <div class="field"><label>من الساعة</label><input id="centerCompareCurrentFromTime" type="time" min="00:00" max="23:59" step="60" value="00:00"></div>
-        <div class="field"><label>إلى أي وقت؟ (24 ساعة)</label><input id="centerCompareCurrentTime" type="time" min="00:00" max="23:59" step="60"></div>
-        <div class="field"><label>قارن مع تاريخ</label><select id="centerCompareReferenceDate" onchange="populateComparisonTimes(document.getElementById('comparisonReportType').value,'center','reference')"></select></div>
+        <div class="field"><label>التاريخ الذي تريد تحليله</label><input id="centerCompareCurrentDate" class="date-calendar" type="date" lang="ar-SA" onchange="comparisonDateChanged(document.getElementById('comparisonReportType').value,'center','current')"></div>
+        <div class="field"><label>من الساعة</label><input id="centerCompareCurrentFromTime" type="time" min="00:00" max="23:59" step="60" value="00:00" onchange="syncComparisonOppositeTime('center','from')"></div>
+        <div class="field"><label>إلى أي وقت؟ (24 ساعة)</label><input id="centerCompareCurrentTime" type="time" min="00:00" max="23:59" step="60" onchange="comparisonCurrentTimeChanged(document.getElementById('comparisonReportType').value,'center')"><button id="centerCompareCurrentLatest" class="compare-latest-time" type="button" onclick="useLatestComparisonTime(document.getElementById('comparisonReportType').value,'center')" hidden>حتى آخر تقرير</button></div>
+        <div class="field"><label>قارن مع تاريخ</label><input id="centerCompareReferenceDate" class="date-calendar" type="date" lang="ar-SA" onchange="comparisonDateChanged(document.getElementById('comparisonReportType').value,'center','reference')"></div>
         <div class="field"><label>من الساعة</label><input id="centerCompareReferenceFromTime" type="time" min="00:00" max="23:59" step="60" value="00:00"></div>
         <div class="field"><label>إلى أي وقت؟ (24 ساعة)</label><input id="centerCompareReferenceTime" type="time" min="00:00" max="23:59" step="60"></div>
       </div>
@@ -226,7 +226,7 @@
   </section>
 
   <section id="reservations" class="page">
-    <div class="hero reservation-hero"><div class="daily-hero-content reservation-hero-content"><div class="daily-hero-title"><h1>تقرير الحجوزات</h1><p id="reservationUpdated">متابعة الحجوزات ومواعيد الزيارة</p><p id="reservationFilterSummary" class="reservation-filter-summary">كل حجوزات اليوم المحدد</p></div><div class="reservation-hero-controls"><div class="reservation-hero-field"><label for="reservationDate">تاريخ تسجيل الحجز</label><select id="reservationDate" onchange="selectReservationDate(this.value)"></select></div><div class="reservation-hero-field"><label for="reservationTimeFrom">من الساعة</label><input id="reservationTimeFrom" type="time" min="00:00" max="23:59" step="60" value="00:00" onchange="reservationFilterChanged()"></div><div class="reservation-hero-field"><label for="reservationTimeTo">إلى الساعة</label><input id="reservationTimeTo" type="time" min="00:00" max="23:59" step="60" value="23:59" onchange="reservationFilterChanged()"></div><div class="reservation-hero-field wide"><label for="reservationVisitScope">ما الحجوزات التي تريد عدّها؟</label><select id="reservationVisitScope" onchange="reservationFilterChanged()"><option value="created">كل الحجوزات المسجلة خلال الفترة — مهما كان موعد الزيارة</option><option value="visitToday">موعد الزيارة في اليوم المحدد</option><option value="visitTomorrow">موعد الزيارة في اليوم التالي</option><option value="visitAfterTomorrow">موعد الزيارة بعد يومين</option></select></div><div class="reservation-hero-field"><label for="reservationOrganization">الجهة أو الفرع</label><select id="reservationOrganization" onchange="reservationOrganizationChanged()"><option value="all">كل الحجوزات</option><option value="allBranches">كل الفروع بدون خدمة العملاء</option><option value="callCenter">خدمة العملاء</option><option value="mobile">Wareed Mobile</option></select></div><div class="reservation-hero-field"><label for="reservationEmployee">الموظف</label><select id="reservationEmployee" onchange="reservationFilterChanged()"><option value="all">كل الموظفين</option></select></div></div></div></div>
+    <div class="hero reservation-hero"><div class="daily-hero-content reservation-hero-content"><div class="daily-hero-title"><h1>تقرير الحجوزات</h1><p id="reservationUpdated">متابعة الحجوزات ومواعيد الزيارة</p><p id="reservationFilterSummary" class="reservation-filter-summary">كل حجوزات اليوم المحدد</p></div><div class="reservation-hero-controls"><div class="reservation-hero-field"><label for="reservationDate">تاريخ تسجيل الحجز</label><input id="reservationDate" class="date-calendar" type="date" lang="ar-SA" onchange="selectReservationDate(this.value)"></div><div class="reservation-hero-field"><label for="reservationTimeFrom">من الساعة</label><input id="reservationTimeFrom" type="time" min="00:00" max="23:59" step="60" value="00:00" onchange="reservationFilterChanged()"></div><div class="reservation-hero-field"><label for="reservationTimeTo">إلى الساعة</label><input id="reservationTimeTo" type="time" min="00:00" max="23:59" step="60" value="23:59" onchange="reservationFilterChanged()"></div><div class="reservation-hero-field wide"><label for="reservationVisitScope">ما الحجوزات التي تريد عدّها؟</label><select id="reservationVisitScope" onchange="reservationFilterChanged()"><option value="created">كل الحجوزات المسجلة خلال الفترة — مهما كان موعد الزيارة</option><option value="visitToday">موعد الزيارة في اليوم المحدد</option><option value="visitTomorrow">موعد الزيارة في اليوم التالي</option><option value="visitAfterTomorrow">موعد الزيارة بعد يومين</option></select></div><div class="reservation-hero-field"><label for="reservationOrganization">الجهة أو الفرع</label><select id="reservationOrganization" onchange="reservationOrganizationChanged()"><option value="all">كل الحجوزات</option><option value="allBranches">كل الفروع بدون خدمة العملاء</option><option value="callCenter">خدمة العملاء</option><option value="mobile">Wareed Mobile</option></select></div><div class="reservation-hero-field"><label for="reservationEmployee">الموظف</label><select id="reservationEmployee" onchange="reservationFilterChanged()"><option value="all">كل الموظفين</option></select></div></div></div></div>
     <div class="reservation-cards"><div class="mini"><span>الإجمالي</span><b id="reservationTotal">—</b></div><div class="mini"><span>Indoor</span><b id="indoor">—</b></div><div class="mini"><span>Outdoor</span><b id="outdoor">—</b></div></div>
     <div class="reservation-source-grid" aria-label="تفصيل الحجوزات حسب مصدر الحجز ونوع الزيارة">
       <article class="reservation-source-card"><div class="reservation-source-head"><span>خدمة العملاء</span><b id="callCenterReservations">—</b></div><div class="reservation-source-modes"><div class="reservation-source-mode"><span>زيارة فرع<br>Indoor</span><b id="callCenterIndoor">—</b></div><div class="reservation-source-mode"><span>زيارة منزلية<br>Outdoor</span><b id="callCenterOutdoor">—</b></div></div></article>
@@ -259,10 +259,10 @@
       <div class="comparison-title"><h2>مقارنات الحجوزات</h2><span class="pill">آخر شهرين • فترة زمنية مرنة</span></div>
       <p class="subtle">اعرف مباشرة كم حجزنا اليوم وكم كان الحجز أمس أو في اليوم الذي تختاره.</p>
       <div class="compare-controls">
-        <div class="field"><label>التاريخ الذي تريد تحليله</label><select id="reservationCompareCurrentDate" onchange="populateComparisonTimes('reservations','reservation','current')"></select></div>
-        <div class="field"><label>من الساعة</label><input id="reservationCompareCurrentFromTime" type="time" min="00:00" max="23:59" step="60" value="00:00"></div>
-        <div class="field"><label>إلى أي وقت؟ (24 ساعة)</label><input id="reservationCompareCurrentTime" type="time" min="00:00" max="23:59" step="60"></div>
-        <div class="field"><label>قارن مع تاريخ</label><select id="reservationCompareReferenceDate" onchange="populateComparisonTimes('reservations','reservation','reference')"></select></div>
+        <div class="field"><label>التاريخ الذي تريد تحليله</label><input id="reservationCompareCurrentDate" class="date-calendar" type="date" lang="ar-SA" onchange="comparisonDateChanged('reservations','reservation','current')"></div>
+        <div class="field"><label>من الساعة</label><input id="reservationCompareCurrentFromTime" type="time" min="00:00" max="23:59" step="60" value="00:00" onchange="syncComparisonOppositeTime('reservation','from')"></div>
+        <div class="field"><label>إلى أي وقت؟ (24 ساعة)</label><input id="reservationCompareCurrentTime" type="time" min="00:00" max="23:59" step="60" onchange="comparisonCurrentTimeChanged('reservations','reservation')"><button id="reservationCompareCurrentLatest" class="compare-latest-time" type="button" onclick="useLatestComparisonTime('reservations','reservation')" hidden>حتى آخر تقرير</button></div>
+        <div class="field"><label>قارن مع تاريخ</label><input id="reservationCompareReferenceDate" class="date-calendar" type="date" lang="ar-SA" onchange="comparisonDateChanged('reservations','reservation','reference')"></div>
         <div class="field"><label>من الساعة</label><input id="reservationCompareReferenceFromTime" type="time" min="00:00" max="23:59" step="60" value="00:00"></div>
         <div class="field"><label>إلى أي وقت؟ (24 ساعة)</label><input id="reservationCompareReferenceTime" type="time" min="00:00" max="23:59" step="60"></div>
       </div>
@@ -480,30 +480,35 @@ function availableDailyDates(monthKey){
   const reports=DATA.daily?.reports||{},dates=(DATA.daily?.availableDates||Object.keys(reports)).filter(date=>reports[date]);
   return dates.filter(date=>!monthKey||date.slice(0,7)===monthKey).sort();
 }
+function configureDateControl(control,dates,selected){
+  if(!control)return '';const available=[...new Set((dates||[]).filter(date=>/^\d{4}-\d{2}-\d{2}$/.test(String(date))))].sort(),value=available.includes(selected)?selected:(available.at(-1)||'');
+  control.min=available[0]||'';control.max=available.at(-1)||'';control.value=value;control.disabled=!available.length;control.dataset.availableDates=available.join(',');control.dataset.validValue=value;return value;
+}
+function validatedDateControlValue(control,dates,candidate,fallback){
+  if((dates||[]).includes(candidate)){if(control)control.dataset.validValue=candidate;return candidate}
+  const restored=(dates||[]).includes(control?.dataset?.validValue)?control.dataset.validValue:((dates||[]).includes(fallback)?fallback:(dates||[]).at(-1)||'');if(control)control.value=restored;if(candidate)toast('لا توجد بيانات محفوظة لهذا التاريخ');return '';
+}
 function dailyView(){
   const reports=DATA.daily?.reports||{},dates=availableDailyDates();
   if(!DAILY_SELECTED_DATE||!reports[DAILY_SELECTED_DATE])DAILY_SELECTED_DATE=dates.at(-1)||'';
   return reports[DAILY_SELECTED_DATE]||{date:DAILY_SELECTED_DATE,capturedAt:DATA.daily?.capturedAt,from:DATA.daily?.from,to:DATA.daily?.to,rows:DATA.daily?.rows||[],metrics:{dailyRevenue:DATA.metrics?.dailyRevenue,dailyTarget:DATA.metrics?.dailyTarget,dailyRate:DATA.metrics?.dailyRate,dailyAcc:DATA.metrics?.dailyAcc}};
 }
 function renderDailyDatePicker(){
-  const select=document.getElementById('dailyDate');if(!select)return;dailyView();
-  const dates=availableDailyDates();select.innerHTML=dates.map(date=>'<option value="'+escapeHtml(date)+'" '+(date===DAILY_SELECTED_DATE?'selected':'')+'>'+escapeHtml(date.split('-').reverse().join('/'))+'</option>').join('');
-  if(!dates.length)select.innerHTML='<option value="">اليوم الحالي</option>';
+  const control=document.getElementById('dailyDate');if(!control)return;dailyView();configureDateControl(control,availableDailyDates(),DAILY_SELECTED_DATE);
 }
 function updateDailyHeader(){
   const view=dailyView();document.getElementById('dailyUpdated').textContent='آخر سحب ناجح من Branch Income: '+reportStamp(view.capturedAt);document.getElementById('dailyPeriod').textContent='فترة التقرير: '+(view.from||'—')+' إلى '+(view.to||'—');
 }
-function selectDailyDate(date){const latest=availableDailyDates().at(-1)||'';DAILY_SELECTED_DATE=date;DAILY_DATE_PINNED=Boolean(date&&date!==latest);renderDailyDatePicker();paintMetrics();renderDaily();updateDailyHeader()}
+function selectDailyDate(date){const control=document.getElementById('dailyDate'),dates=availableDailyDates(),latest=dates.at(-1)||'',valid=validatedDateControlValue(control,dates,date,DAILY_SELECTED_DATE);if(!valid)return;DAILY_SELECTED_DATE=valid;DAILY_DATE_PINNED=Boolean(valid!==latest);renderDailyDatePicker();paintMetrics();renderDaily();updateDailyHeader()}
 function heatDayView(){
   const month=executiveView(),reports=DATA.daily?.reports||{},dates=availableDailyDates(month.monthKey);
   if(!HEAT_SELECTED_DATE||!reports[HEAT_SELECTED_DATE]||HEAT_SELECTED_DATE.slice(0,7)!==month.monthKey)HEAT_SELECTED_DATE=dates.at(-1)||'';
   return reports[HEAT_SELECTED_DATE]||{date:HEAT_SELECTED_DATE,rows:month.dailyRows||DATA.daily?.rows||[],metrics:month.metrics||DATA.metrics};
 }
 function renderHeatDatePicker(){
-  const select=document.getElementById('heatDate');if(!select)return;const month=executiveView(),dates=availableDailyDates(month.monthKey);heatDayView();
-  select.innerHTML=dates.map(date=>'<option value="'+escapeHtml(date)+'" '+(date===HEAT_SELECTED_DATE?'selected':'')+'>'+escapeHtml(date.split('-').reverse().join('/'))+'</option>').join('');if(!dates.length)select.innerHTML='<option value="">لا توجد أيام محفوظة</option>';
+  const control=document.getElementById('heatDate');if(!control)return;const month=executiveView(),dates=availableDailyDates(month.monthKey);heatDayView();configureDateControl(control,dates,HEAT_SELECTED_DATE);
 }
-function selectHeatDate(date){const latest=availableDailyDates(executiveView().monthKey).at(-1)||'';HEAT_SELECTED_DATE=date;HEAT_DATE_PINNED=Boolean(date&&date!==latest);HEAT.selected=-1;HEAT.boundsFitted=false;HEAT.visibleBoundsFitted=false;paintMetrics();renderTrend();renderExecutive()}
+function selectHeatDate(date){const control=document.getElementById('heatDate'),dates=availableDailyDates(executiveView().monthKey),latest=dates.at(-1)||'',valid=validatedDateControlValue(control,dates,date,HEAT_SELECTED_DATE);if(!valid)return;HEAT_SELECTED_DATE=valid;HEAT_DATE_PINNED=Boolean(valid!==latest);HEAT.selected=-1;HEAT.boundsFitted=false;HEAT.visibleBoundsFitted=false;paintMetrics();renderTrend();renderExecutive()}
 function executiveView(){
   const executive=DATA.executive||{},months=executive.months||{},keys=(executive.availableMonths||Object.keys(months)).filter(key=>months[key]).sort();
   if(!EXECUTIVE_SELECTED_MONTH||!months[EXECUTIVE_SELECTED_MONTH])EXECUTIVE_SELECTED_MONTH=months[executive.currentMonth]?executive.currentMonth:(keys.at(-1)||'');
@@ -789,8 +794,9 @@ function reservationSnapshotAt(date,from,time){
 }
 function comparisonSnapshot(kind,date,time,from='00:00'){return kind==='sales'?salesSnapshotAt(date,time,from):reservationSnapshotAt(date,from,time)}
 function comparisonDefaultEnd(kind,date){
-  if(kind==='sales'){const day=salesTimelineDay(date),available=Number(day?.availableThrough);return day&&Number.isFinite(available)&&available<1439?compareMinuteText(available):'23:59'}
-  const day=DATA.reservations?.analytics?.dates?.[date];return day&&!day.complete?reservationMinuteText(day.observedUntil??1439):'23:59';
+  if(kind==='sales'){const day=salesTimelineDay(date),available=Number(day?.availableThrough);if(day&&Number.isFinite(available))return available<1439?compareMinuteText(available):'23:59'}
+  else{const day=DATA.reservations?.analytics?.dates?.[date];if(day)return !day.complete?reservationMinuteText(day.observedUntil??1439):'23:59'}
+  const legacy=comparisonRows(kind).filter(row=>row.date===date&&row.time).sort((a,b)=>compareTimeMinutes(b.time)-compareTimeMinutes(a.time))[0];return legacy?.time||'23:59';
 }
 function comparisonWords(kind,current,reference){
   const dates=comparisonDates(kind),latestDate=dates.at(-1)||current.date,isLatest=current.date===latestDate,gap=comparisonDayGap(current.date,reference.date),currentShort=isLatest?'اليوم':'يوم '+shortComparisonDate(current.date);let referenceShort='يوم '+shortComparisonDate(reference.date);
@@ -820,11 +826,29 @@ function prepareComparison(kind){
 }
 function comparisonPickerId(prefix,side,part){const suffix=part==='date'?'Date':part==='from'?'FromTime':'Time';return prefix+'Compare'+(side==='current'?'Current':'Reference')+suffix}
 function populateComparisonTimes(kind,prefix,side,preferredTime){
-  const dateSelect=document.getElementById(comparisonPickerId(prefix,side,'date')),timeInput=document.getElementById(comparisonPickerId(prefix,side,'time'));if(!dateSelect||!timeInput)return;timeInput.value=preferredTime||timeInput.value||comparisonDefaultEnd(kind,dateSelect.value);
+  const dateControl=document.getElementById(comparisonPickerId(prefix,side,'date')),timeInput=document.getElementById(comparisonPickerId(prefix,side,'time'));if(!dateControl||!timeInput)return;timeInput.value=preferredTime||timeInput.value||comparisonDefaultEnd(kind,dateControl.value);
+}
+function syncComparisonOppositeTime(prefix,part='time'){
+  const current=document.getElementById(comparisonPickerId(prefix,'current',part)),reference=document.getElementById(comparisonPickerId(prefix,'reference',part));if(current&&reference&&current.value)reference.value=current.value;
+}
+function refreshComparisonLatestAction(kind,prefix){
+  const button=document.getElementById(prefix+'CompareCurrentLatest'),date=document.getElementById(comparisonPickerId(prefix,'current','date'))?.value,dates=comparisonDates(kind),latestDate=dates.at(-1)||'',latestTime=date?comparisonDefaultEnd(kind,date):'';if(!button)return;
+  const visible=Boolean(date&&date===latestDate&&latestTime&&latestTime!=='23:59');button.hidden=!visible;button.textContent=visible?'حتى آخر تقرير • '+latestTime:'حتى آخر تقرير';button.dataset.latestTime=visible?latestTime:'';
+}
+function comparisonCurrentTimeChanged(kind,prefix){syncComparisonOppositeTime(prefix,'time');refreshComparisonLatestAction(kind,prefix)}
+function useLatestComparisonTime(kind,prefix){
+  const date=document.getElementById(comparisonPickerId(prefix,'current','date'))?.value,time=document.getElementById(comparisonPickerId(prefix,'current','time')),latest=date?comparisonDefaultEnd(kind,date):'';if(!time||!latest)return;time.value=latest;syncComparisonOppositeTime(prefix,'time');refreshComparisonLatestAction(kind,prefix);toast('تم اختيار وقت آخر تقرير: '+latest);
+}
+function comparisonDateChanged(kind,prefix,side){
+  const control=document.getElementById(comparisonPickerId(prefix,side,'date')),dates=comparisonDates(kind),valid=validatedDateControlValue(control,dates,control?.value,control?.dataset?.validValue);if(!valid)return;
+  if(side==='current'){const time=document.getElementById(comparisonPickerId(prefix,'current','time'));if(time)time.value=comparisonDefaultEnd(kind,valid);syncComparisonOppositeTime(prefix,'from');syncComparisonOppositeTime(prefix,'time')}
+  else populateComparisonTimes(kind,prefix,side);
+  refreshComparisonLatestAction(kind,prefix);
 }
 function populateComparisonPicker(kind,prefix,pair){
-  const dates=comparisonDates(kind).reverse();if(!dates.length)return;const dateOptions=dates.map(date=>'<option value="'+date+'">'+date.split('-').reverse().join('/')+'</option>').join('');
-  for(const side of ['current','reference']){const snapshot=pair?.[side],dateSelect=document.getElementById(comparisonPickerId(prefix,side,'date')),fromInput=document.getElementById(comparisonPickerId(prefix,side,'from'));if(!dateSelect)continue;dateSelect.innerHTML=dateOptions;if(snapshot&&dates.includes(snapshot.date))dateSelect.value=snapshot.date;if(fromInput)fromInput.value=snapshot?.fromTime||'00:00';populateComparisonTimes(kind,prefix,side,snapshot?.time)}
+  const dates=comparisonDates(kind);if(!dates.length)return;
+  for(const side of ['current','reference']){const snapshot=pair?.[side],dateControl=document.getElementById(comparisonPickerId(prefix,side,'date')),fromInput=document.getElementById(comparisonPickerId(prefix,side,'from'));if(!dateControl)continue;configureDateControl(dateControl,dates,snapshot?.date);if(fromInput)fromInput.value=snapshot?.fromTime||'00:00';populateComparisonTimes(kind,prefix,side,snapshot?.time)}
+  refreshComparisonLatestAction(kind,prefix);
 }
 function applySplitComparison(kind,prefix){
   const dates=comparisonDates(kind),read=side=>{const date=document.getElementById(comparisonPickerId(prefix,side,'date'))?.value,time=document.getElementById(comparisonPickerId(prefix,side,'time'))?.value||'23:59',from=document.getElementById(comparisonPickerId(prefix,side,'from'))?.value||'00:00';return {date,time,from}};const current=read('current'),reference=read('reference');
@@ -990,14 +1014,11 @@ function reservationView(){
   return reports[RESERVATION_SELECTED_DATE]||root;
 }
 function renderReservationDatePicker(){
-  const select=document.getElementById('reservationDate');if(!select)return;
-  reservationView();const dates=availableReservationDates(),latest=dates.at(-1)||'';
-  select.innerHTML=dates.map(date=>'<option value="'+escapeHtml(date)+'" '+(date===RESERVATION_SELECTED_DATE?'selected':'')+'>'+escapeHtml(date.split('-').reverse().join('/'))+(date===latest?' — الأحدث':'')+'</option>').join('');
-  if(!dates.length)select.innerHTML='<option value="">آخر تقرير متاح</option>';
+  const control=document.getElementById('reservationDate');if(!control)return;reservationView();configureDateControl(control,availableReservationDates(),RESERVATION_SELECTED_DATE);
 }
 function selectReservationDate(value){
-  const date=reservationDateKey(value),dates=availableReservationDates(),latest=dates.at(-1)||'';
-  RESERVATION_SELECTED_DATE=dates.includes(date)?date:latest;RESERVATION_DATE_PINNED=Boolean(RESERVATION_SELECTED_DATE&&RESERVATION_SELECTED_DATE!==latest);renderReservations();
+  const control=document.getElementById('reservationDate'),date=reservationDateKey(value),dates=availableReservationDates(),latest=dates.at(-1)||'',valid=validatedDateControlValue(control,dates,date,RESERVATION_SELECTED_DATE);if(!valid)return;
+  RESERVATION_SELECTED_DATE=valid;RESERVATION_DATE_PINNED=Boolean(valid!==latest);renderReservations();
 }
 function reservationFilterChanged(){
   const from=document.getElementById('reservationTimeFrom')?.value||'00:00',to=document.getElementById('reservationTimeTo')?.value||'23:59';if(reservationTimeMinutes(from)>reservationTimeMinutes(to)){toast('وقت البداية يجب أن يكون قبل وقت النهاية');return}
