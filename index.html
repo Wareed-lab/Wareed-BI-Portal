@@ -122,8 +122,9 @@
       <div class="metric"><span>الهدف اليومي</span><b data-key="dailyTarget">—</b></div>
       <div class="metric"><span>تحقيق اليوم</span><b data-key="dailyRate">—</b></div>
       <div class="metric"><span>مبيعات الشهر</span><b data-key="monthRevenue">—</b></div>
-      <div class="metric"><span>الهدف الشهري</span><b data-key="monthTarget">—</b></div>
+      <div class="metric"><span>تارجت الشهر</span><b data-key="monthTarget">—</b></div>
       <div class="metric"><span>تحقيق الشهر</span><b data-key="monthRate">—</b></div>
+      <div class="metric metric-forecast"><span>توقع إغلاق الشهر</span><b data-key="monthForecast">—</b></div>
       <div class="metric"><span>عملاء الكاش</span><b data-key="dailyAcc">—</b></div>
       <div class="metric"><span>حجوزات اليوم</span><b data-key="reservations">—</b></div>
     </div>
@@ -154,12 +155,14 @@
   </section>
 
   <section id="executive" class="page">
-    <div class="hero"><div class="executive-hero-content"><div class="executive-hero-title"><h1>التقرير التنفيذي</h1><p id="executiveUpdated">آخر لقطة مكتملة من Google Sheets: —</p><small id="executiveTargetBasis" class="executive-month-note">التارجت التنفيذي: فهد وريم</small></div><div class="executive-hero-controls"><div id="executiveMonthPicker" class="executive-month-picker" aria-label="اختيار شهر التقرير التنفيذي"></div><select id="heatMetric" class="executive-hero-select" onchange="renderHeatMap()" aria-label="اختيار بيانات الخريطة"><option value="daily" selected>مبيعات اليوم</option><option value="monthly">مبيعات الشهر — تحقيق الهدف %</option><option value="patients">عملاء ACC اليوم</option></select><input id="heatDate" class="executive-hero-select heat-date-select date-calendar" type="date" lang="ar-SA" onchange="selectHeatDate(this.value)" aria-label="اختيار يوم التقرير التنفيذي"></div></div></div>
+    <div class="hero"><div class="executive-hero-content"><div class="executive-hero-title"><h1>التقرير التنفيذي</h1><p id="executiveUpdated">آخر لقطة مكتملة من Google Sheets: —</p><small id="executiveTargetBasis" class="executive-month-note">تارجت الشهر: فهد وريم</small></div><div class="executive-hero-controls"><div id="executiveMonthPicker" class="executive-month-picker" aria-label="اختيار شهر التقرير التنفيذي"></div><select id="heatMetric" class="executive-hero-select" onchange="renderHeatMap()" aria-label="اختيار بيانات الخريطة"><option value="daily" selected>مبيعات اليوم</option><option value="monthly">مبيعات الشهر — تحقيق الهدف %</option><option value="patients">عملاء ACC اليوم</option></select><input id="heatDate" class="executive-hero-select heat-date-select date-calendar" type="date" lang="ar-SA" onchange="selectHeatDate(this.value)" aria-label="اختيار يوم التقرير التنفيذي"></div></div></div>
     <div class="metrics executive-metrics">
       <div class="metric"><span id="executiveDailyRevenueLabel">مبيعات اليوم</span><b data-exec-key="dailyRevenue">—</b></div>
       <div class="metric"><span id="executiveDailyRateLabel">تحقيق اليوم</span><b data-exec-key="dailyRate">—</b></div>
       <div class="metric"><span>مبيعات الشهر</span><b data-exec-key="monthRevenue">—</b></div>
+      <div class="metric"><span>تارجت الشهر</span><b data-exec-key="monthTarget">—</b></div>
       <div class="metric"><span>تحقيق الشهر</span><b data-exec-key="monthRate">—</b></div>
+      <div class="metric metric-forecast"><span>توقع إغلاق الشهر</span><b id="executiveMonthForecast">—</b><small id="executiveMonthForecastNote">يُحسب من أداء الأيام المكتملة</small></div>
       <div class="metric metric-forecast"><span>توقع إغلاق اليوم</span><b id="executiveDailyForecast">—</b><small id="executiveDailyForecastNote">يُحسب من منحنى الأيام السابقة</small></div>
     </div>
     <div class="section"><div class="section-head"><h2>المبيعات من بداية الشهر</h2><span class="subtle">الأيام السابقة من VAT • اليوم من Branch Income</span></div><div id="trend" class="chart"></div></div>
@@ -247,14 +250,14 @@
   <section id="monthly" class="page">
     <div class="hero"><h1>التقرير الشهري</h1><p id="monthlyUpdated">محدّث حتى: —</p><p>الوقت مأخوذ من آخر فاتورة في تقرير VAT</p></div>
     <div class="metrics">
-      <div class="metric"><span>مبيعات الشهر</span><b data-key="monthRevenue">—</b></div>
-      <div class="metric"><span>التارجت الشهري</span><b data-key="monthTarget">—</b></div>
-      <div class="metric"><span>نسبة التحقيق</span><b data-key="monthRate">—</b></div>
-      <div class="metric"><span>نسبة المتبقي</span><b data-key="monthRemainingRate">—</b></div>
+      <div class="metric"><span>مبيعات الشهر</span><b data-key="branchStaffMonthRevenue">—</b></div>
+      <div class="metric"><span>تارجت موظفي الفروع</span><b data-key="branchStaffMonthTarget">—</b></div>
+      <div class="metric"><span>نسبة تحقيق موظفي الفروع</span><b data-key="branchStaffMonthRate">—</b></div>
+      <div class="metric"><span>نسبة المتبقي</span><b data-key="branchStaffMonthRemainingRate">—</b></div>
     </div>
     <div class="section">
       <div class="toolbar"><input id="monthFilter" placeholder="فلترة باسم الفرع" oninput="renderMonthly()"><select id="monthSort" onchange="renderMonthly()"><option value="rate">التحقيق: الأعلى</option><option value="revenue">الإيراد: الأعلى</option><option value="remaining">المتبقي: الأعلى</option><option value="branch">اسم الفرع</option></select><button class="primary" onclick="exportReport('monthly')">تنزيل / مشاركة</button></div>
-      <div class="table-scroll"><table class="data-table monthly-table"><thead><tr><th>الفرع</th><th>إيراد الشهر</th><th>الهدف الشهري</th><th>نسبة التحقيق</th><th>المتبقي</th><th>نسبة المتبقي</th></tr></thead><tbody id="monthlyRows"></tbody></table></div>
+      <div class="table-scroll"><table class="data-table monthly-table"><thead><tr><th>الفرع</th><th>إيراد الشهر</th><th>تارجت موظفي الفروع</th><th>نسبة التحقيق</th><th>المتبقي</th><th>نسبة المتبقي</th></tr></thead><tbody id="monthlyRows"></tbody></table></div>
     </div>
   </section>
 
@@ -721,7 +724,7 @@ function renderExecutiveMonthPicker(){
   const picker=document.getElementById('executiveMonthPicker');if(!picker)return;
   const executive=DATA.executive||{},months=executive.months||{},keys=(executive.availableMonths||Object.keys(months)).filter(key=>months[key]).sort();
   picker.innerHTML=keys.map(key=>'<button type="button" class="executive-month-button'+(key===EXECUTIVE_SELECTED_MONTH?' active':'')+'" onclick="selectExecutiveMonth(\''+escapeHtml(key)+'\')">'+escapeHtml(months[key].label||key)+'</button>').join('');
-  const view=executiveView(),note=document.getElementById('executiveTargetBasis');if(note)note.textContent='التارجت التنفيذي: فهد وريم • المصدر: '+(view.targetSheet||'صفحة تارجت الشهر');
+  const view=executiveView(),note=document.getElementById('executiveTargetBasis');if(note)note.textContent='تارجت الشهر: فهد وريم • المصدر: '+(view.targetSheet||'صفحة تارجت الشهر');
 }
 function selectExecutiveMonth(key){
   if(!DATA.executive?.months?.[key])return;EXECUTIVE_SELECTED_MONTH=key;EXECUTIVE_MONTH_PINNED=Boolean(key&&key!==DATA.executive?.currentMonth);HEAT_SELECTED_DATE='';HEAT_DATE_PINNED=false;HEAT.selected=-1;HEAT.boundsFitted=false;HEAT.visibleBoundsFitted=false;
@@ -743,14 +746,23 @@ function sharedSalesClosingForecast(date,time){
   return {projected:Math.round(projected),lower:Math.round(lower),upper:Math.round(Math.min(upper,projected*1.8)),observed:point.total,asOf:compareMinuteText(point.minute),sampleSize:shares.length,confidence,method:'منحنى الإغلاق التاريخي لنفس الساعة'};
 }
 function executiveForecastDate(){const month=executiveView(),timelineDates=(salesTimeline()?.dates||[]).map(row=>row.date).filter(date=>date.slice(0,7)===month.monthKey);return HEAT_SELECTED_DATE||timelineDates.at(-1)||availableDailyDates(month.monthKey).at(-1)||''}
+function executiveMonthClosingForecast(){
+  const month=executiveView(),metrics=executiveDayMetrics(),actuals=executiveMonthActuals(),parts=String(month.monthKey||'').split('-').map(Number),daysInMonth=parts[0]&&parts[1]?new Date(parts[0],parts[1],0).getDate():30,rows=(actuals.rows||[]).map(row=>({day:Number(String(row.date||'').slice(-2)),value:Number(row.value)||0})).filter(row=>row.day>0).sort((a,b)=>a.day-b.day),actual=Math.round(Number(metrics.monthRevenue)||0),target=Math.round(Number(metrics.monthTarget)||0);
+  if(!rows.length)return {projected:actual,lower:actual,upper:actual,rate:target?actual/target*100:0,completedDays:0,confidence:'مبدئية'};
+  const lastDay=Math.min(daysInMonth,Math.max(...rows.map(row=>row.day)));if(lastDay>=daysInMonth)return {projected:actual,lower:actual,upper:actual,rate:target?actual/target*100:0,completedDays:daysInMonth,confidence:'فعلي'};
+  const byDay=new Map(rows.map(row=>[row.day,row.value])),completedDays=Math.max(0,lastDay-1);if(!completedDays)return {projected:actual,lower:actual,upper:actual,rate:target?actual/target*100:0,completedDays:0,confidence:'مبدئية'};
+  const completed=Array.from({length:completedDays},(_,index)=>Number(byDay.get(index+1))||0),completedTotal=completed.reduce((sum,value)=>sum+value,0),overall=completedTotal/completedDays,recentValues=completed.slice(-Math.min(7,completed.length)),recent=recentValues.reduce((sum,value)=>sum+value,0)/Math.max(1,recentValues.length),weighted=recent*.6+overall*.4,remainingDays=daysInMonth-completedDays,projected=Math.max(actual,Math.round(completedTotal+weighted*remainingDays)),lower=Math.max(actual,Math.round(completedTotal+Math.min(overall,recent)*remainingDays)),upper=Math.max(projected,Math.round(completedTotal+Math.max(overall,recent)*remainingDays)),confidence=completedDays>=14?'عالية':completedDays>=7?'متوسطة':'مبدئية';
+  return {projected,lower,upper,rate:target?projected/target*100:0,completedDays,confidence};
+}
 function renderExecutiveForecasts(){
-  const date=executiveForecastDate(),time=comparisonDefaultEnd('sales',date),daily=sharedSalesClosingForecast(date,time),dailyValue=document.getElementById('executiveDailyForecast'),dailyNote=document.getElementById('executiveDailyForecastNote');
+  const date=executiveForecastDate(),time=comparisonDefaultEnd('sales',date),daily=sharedSalesClosingForecast(date,time),monthly=executiveMonthClosingForecast(),dailyValue=document.getElementById('executiveDailyForecast'),dailyNote=document.getElementById('executiveDailyForecastNote'),monthValue=document.getElementById('executiveMonthForecast'),monthNote=document.getElementById('executiveMonthForecastNote');
   if(dailyValue)dailyValue.textContent=daily?money(daily.projected)+' ر.س':'—';if(dailyNote)dailyNote.textContent=daily?(daily.confidence==='فعلي'?'الإغلاق الفعلي من VAT ليوم '+shortComparisonDate(date):'VAT حتى '+daily.asOf+' • نفس حساب مركز المقارنات • نطاق '+money(daily.lower)+'–'+money(daily.upper)+' • ثقة '+daily.confidence):'لا توجد نقاط كافية للحساب';
+  if(monthValue)monthValue.textContent=money(monthly.projected)+' ر.س';if(monthNote)monthNote.textContent='متوقع '+pct(monthly.rate)+' من تارجت الشهر • نطاق '+money(monthly.lower)+'–'+money(monthly.upper)+' • ثقة '+monthly.confidence;
 }
 function paintMetrics(){
-  const m=DATA.metrics||{}, values={dailyRevenue:money(m.dailyRevenue),dailyTarget:money(m.dailyTarget),dailyRate:pct(m.dailyRate),dailyAcc:money(m.dailyAcc),monthRevenue:money(m.monthRevenue),monthTarget:money(m.monthTarget),monthRate:pct(m.monthRate),monthRemainingRate:pct(Math.max(0,100-(m.monthRate||0))),reservations:money(m.reservations)};
+  const m=DATA.metrics||{},executiveMetrics=executiveDayMetrics(),monthForecast=executiveMonthClosingForecast(),values={dailyRevenue:money(m.dailyRevenue),dailyTarget:money(m.dailyTarget),dailyRate:pct(m.dailyRate),dailyAcc:money(m.dailyAcc),monthRevenue:money(executiveMetrics.monthRevenue),monthTarget:money(executiveMetrics.monthTarget),monthRate:pct(executiveMetrics.monthRate),monthForecast:money(monthForecast.projected),branchStaffMonthRevenue:money(m.monthRevenue),branchStaffMonthTarget:money(m.monthTarget),branchStaffMonthRate:pct(m.monthRate),branchStaffMonthRemainingRate:pct(Math.max(0,100-(m.monthRate||0))),reservations:money(m.reservations)};
   for(const [key,value] of Object.entries(values))document.querySelectorAll('[data-key="'+key+'"]').forEach(el=>el.textContent=value);
-  const executiveMetrics=executiveDayMetrics(),executiveValues={dailyRevenue:money(executiveMetrics.dailyRevenue),dailyRate:pct(executiveMetrics.dailyRate),monthRevenue:money(executiveMetrics.monthRevenue),monthRate:pct(executiveMetrics.monthRate)};
+  const executiveValues={dailyRevenue:money(executiveMetrics.dailyRevenue),dailyRate:pct(executiveMetrics.dailyRate),monthRevenue:money(executiveMetrics.monthRevenue),monthTarget:money(executiveMetrics.monthTarget),monthRate:pct(executiveMetrics.monthRate)};
   for(const [key,value] of Object.entries(executiveValues))document.querySelectorAll('[data-exec-key="'+key+'"]').forEach(el=>el.textContent=value);
   const selectedDaily=dailyView().metrics||m,dailyValues={dailyRevenue:money(selectedDaily.dailyRevenue),dailyTarget:money(selectedDaily.dailyTarget),dailyRate:pct(selectedDaily.dailyRate),dailyAcc:money(selectedDaily.dailyAcc)};
   for(const [key,value] of Object.entries(dailyValues))document.querySelectorAll('[data-daily-key="'+key+'"]').forEach(el=>el.textContent=value);
