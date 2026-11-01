@@ -137,7 +137,7 @@
     try{const result=await request('webSaveAiConfig',{apiKey,model:model?.value||'gpt-6-astra'});if(key)key.value='';renderAiStatus(result);message.textContent='تم ربط Wareed AI بنجاح. الأسئلة الجديدة ستستخدم النموذج الفعلي مع أدوات تحليل بيانات وريد.'}catch(error){message.textContent=error.message||'تعذر ربط OpenAI.'}finally{button.disabled=false}
   }
   function applyPermissions(){
-    document.querySelectorAll('.nav[data-page]').forEach(node=>{const page=node.dataset.page;node.hidden=page==='users'?session?.user?.role!=='owner':page==='areaAdmin'?!canAction('manageAreas'):!canView(page)});
+    document.querySelectorAll('.nav[data-page]').forEach(node=>{const page=node.dataset.page;if(session?.user?.role==='area_manager'&&page!=='regions'){node.remove();return}node.hidden=page==='users'?session?.user?.role!=='owner':page==='areaAdmin'?!canAction('manageAreas'):!canView(page)});
     document.querySelectorAll('[data-owner-only]').forEach(node=>{if(node.matches('[data-page]'))return;node.hidden=session?.user?.role!=='owner'});
     const aiFab=document.getElementById('wareedAiFab');if(aiFab)aiFab.hidden=!canView('ai');if(!canView('ai'))window.openWareedAiMini?.(false);
     const refresh=document.querySelector('.top .icon[onclick*="refreshData"]');if(refresh)refresh.hidden=!canAction('refresh');
