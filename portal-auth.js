@@ -4,8 +4,8 @@
   const SESSION_KEY='wareedBiWebSessionV1';
   const DIAGNOSTICS_KEY='wareedDiagnostics';
   const DIAGNOSTICS_LIMIT=60;
-  const VIEW_LABELS={home:'الرئيسية',executive:'التقرير التنفيذي',daily:'التقرير اليومي',salesComparison:'مركز المقارنات',ai:'Wareed AI',monthly:'التقرير الشهري',reservations:'تقرير الحجوزات',archive:'التقارير السابقة',send:'إرسال تقرير',recipients:'مستلمو التقارير',diagnostics:'التشخيص',settings:'الإعدادات'};
-  const ACTION_LABELS={refresh:'تحديث البيانات',sendReport:'إرسال التقارير',download:'تنزيل التقارير',archive:'طلب التقارير السابقة',manageRecipients:'إدارة المستلمين',manageAutomation:'إدارة الجدولة',diagnostics:'عرض التشخيص'};
+  const VIEW_LABELS={home:'الرئيسية',executive:'التقرير التنفيذي',daily:'التقرير اليومي',salesComparison:'مركز المقارنات',ai:'Wareed AI',monthly:'التقرير الشهري',reservations:'تقرير الحجوزات',archive:'التقارير السابقة',send:'إرسال تقرير',recipients:'مستلمو التقارير',diagnostics:'التشخيص',settings:'الإعدادات',regions:'المناطق'};
+  const ACTION_LABELS={refresh:'تحديث البيانات',sendReport:'إرسال التقارير',download:'تنزيل التقارير',archive:'طلب التقارير السابقة',manageRecipients:'إدارة المستلمين',manageAutomation:'إدارة الجدولة',diagnostics:'عرض التشخيص',manageAreas:'إدارة مستخدمي المناطق'};
   const ACTION_MAP={appBootstrap:'webBootstrap',appSendReport:'webSendReport',appSendStatus:'webSendStatus',appRefreshReport:'webRefreshReport',appArchiveReport:'webArchiveReport',appArchiveContent:'webArchiveContent',appRecipientChange:'webRecipientChange',appSaveAutomation:'webSaveAutomation'};
   let session=null;
   let users=[];
@@ -14,6 +14,10 @@
   let usersLoadPromise=null;
   let usersLoadedAt=0;
   let aiStatus=null;
+  let areaPayload=null;
+  let areaGroups=[];
+  let areaCatalog=[];
+  let areaSelectedBranches=new Set();
 
   function diagnostics(){try{const value=JSON.parse(localStorage.getItem(DIAGNOSTICS_KEY)||'[]');return Array.isArray(value)?value:[]}catch(_){return []}}
   function redactDiagnosticText(value){
@@ -133,7 +137,7 @@
     try{const result=await request('webSaveAiConfig',{apiKey,model:model?.value||'gpt-6-astra'});if(key)key.value='';renderAiStatus(result);message.textContent='تم ربط Wareed AI بنجاح. الأسئلة الجديدة ستستخدم النموذج الفعلي مع أدوات تحليل بيانات وريد.'}catch(error){message.textContent=error.message||'تعذر ربط OpenAI.'}finally{button.disabled=false}
   }
   function applyPermissions(){
-    document.querySelectorAll('.nav[data-page]').forEach(node=>{const page=node.dataset.page;node.hidden=page==='users'?session?.user?.role!=='owner':!canView(page)});
+    document.querySelectorAll('.nav[data-page]').forEach(node=>{const page=node.dataset.page;node.hidden=page==='users'?session?.user?.role!=='owner':page==='areaAdmin'?!canAction('manageAreas'):!canView(page)});
     document.querySelectorAll('[data-owner-only]').forEach(node=>{if(node.matches('[data-page]'))return;node.hidden=session?.user?.role!=='owner'});
     const aiFab=document.getElementById('wareedAiFab');if(aiFab)aiFab.hidden=!canView('ai');if(!canView('ai'))window.openWareedAiMini?.(false);
     const refresh=document.querySelector('.top .icon[onclick*="refreshData"]');if(refresh)refresh.hidden=!canAction('refresh');
@@ -148,7 +152,7 @@
   }
   function activateSessionShell(user,statusText){
     if(!user)return;
-    session.user=user;saveSession(session);installSessionHeader();
+    session.user=user;saveSession(session);installSessionHeader();ensureAreaShell();
     const name=document.getElementById('portalSessionName');if(name)name.textContent=user.username;
     applyPermissions();if(user.role==='owner'){if(!document.getElementById('portalUserFormTitle'))renderAdminShell();void loadUsers()}if(canView('ai'))void loadAiStatus();hideGate();
     const status=document.getElementById('sourceStatus');if(status&&statusText)status.textContent=statusText;
@@ -162,6 +166,8 @@
     originalPortableCall=window.portableCall;
     window.portableCall=function(name,arg){
       if(name==='pageChanged'&&arg==='users'&&session?.user?.role==='owner')loadUsers();
+      if(name==='pageChanged'&&arg==='regions')renderRegions();
+      if(name==='pageChanged'&&arg==='areaAdmin'&&canAction('manageAreas'))loadAreaGroups();
       if(name==='refreshReport'&&!canAction('refresh'))return window.toast('لا تملك صلاحية التحديث');
       if(name==='sendReport'&&!canAction('sendReport'))return window.toast('لا تملك صلاحية الإرسال');
       if(name==='requestArchive'&&!canAction('archive'))return window.toast('لا تملك صلاحية طلب الأرشيف');
@@ -191,7 +197,7 @@
   }
   async function loadBootstrap(silent){
     try{
-      const result=await request('webBootstrap',{});session.user=result.user;saveSession(session);window.applyCloudBootstrap(result);window.applyLocalConfig({cloudEndpoint:CONFIG.endpoint,liveIntervalMinutes:1},{name:result.user.username,email:result.user.username,role:result.user.role},diagnostics());activateSessionShell(result.user);window.startPortableLive?.();if(!silent)window.toast('تم تحميل التقارير بنجاح');return result;
+      const result=await request('webBootstrap',{});session.user=result.user;areaPayload=result.area||null;saveSession(session);window.applyCloudBootstrap(result);window.applyLocalConfig({cloudEndpoint:CONFIG.endpoint,liveIntervalMinutes:1},{name:result.user.username,email:result.user.username,role:result.user.role},diagnostics());activateSessionShell(result.user);renderRegions();window.startPortableLive?.();if(!silent)window.toast('تم تحميل التقارير بنجاح');return result;
     }catch(err){
       const message=err.message||'تعذر الاتصال بخدمة Wareed.';
       if(!err.diagnosticRecorded)recordDiagnostic('error',err.code||'WEB-BOOTSTRAP-FAILED',message,'فشل تحميل بيانات الداشبورد بعد التحقق من الجلسة.');
@@ -205,6 +211,60 @@
       return null;
     }
   }
+  function ensureAreaShell(){
+    if(document.getElementById('regions'))return;
+    const usersNav=document.querySelector('.nav[data-page="users"]'),drawer=document.getElementById('drawer');
+    const regionsNav=document.createElement('button');regionsNav.className='nav';regionsNav.dataset.page='regions';regionsNav.textContent='المناطق';regionsNav.onclick=function(){window.go('regions',this)};
+    (usersNav||drawer?.querySelector('.drawer-foot'))?.before(regionsNav);
+    const adminNav=document.createElement('button');adminNav.className='nav';adminNav.dataset.page='areaAdmin';adminNav.textContent='إدارة مستخدمي المناطق';adminNav.onclick=function(){window.go('areaAdmin',this)};
+    (usersNav||drawer?.querySelector('.drawer-foot'))?.before(adminNav);
+    const main=document.querySelector('main.wrap'),settings=document.getElementById('settings');
+    const regions=document.createElement('section');regions.id='regions';regions.className='page';regions.innerHTML='<div class="area-report-hero"><img src="wareed-logo.png" alt="مختبرات وريد الطبية"><div><span>تقرير أداء المناطق</span><h1 id="areaPageTitle">المناطق</h1><p id="areaPageUpdated">جارٍ تحميل أحدث بيانات الدخل والتارجت</p></div></div><div id="areaReports" class="area-reports"></div>';
+    const admin=document.createElement('section');admin.id='areaAdmin';admin.className='page';admin.innerHTML='<div class="hero"><h1>إدارة مستخدمي المناطق</h1><p>أنشئ مجموعة ومديرًا وحدد الفروع التي تظهر له — بحد أقصى 30 فرعًا</p></div><div class="section"><div class="section-head"><h2 id="areaFormTitle">إضافة مجموعة منطقة</h2><button class="soft" type="button" onclick="WareedPortal.resetAreaForm()">مجموعة جديدة</button></div><input type="hidden" id="areaGroupId"><input type="hidden" id="areaUserId"><div class="portal-admin-grid"><label>عنوان الاجتماع<input id="areaMeetingTitle" placeholder="مثال: اجتماع منطقة الرياض"></label><label>اسم دخول مدير المنطقة<input id="areaUsername" dir="ltr" placeholder="username"></label><label>كلمة المرور<input id="areaPassword" type="password" dir="ltr" autocomplete="new-password" placeholder="مطلوبة للجديد"></label><label><span><input id="areaEnabled" type="checkbox" checked> المجموعة والحساب مفعلان</span></label><label class="full">بحث في الفروع<input id="areaBranchSearch" placeholder="اكتب اسم الفرع أو المدينة" oninput="WareedPortal.renderAreaCatalog()"></label></div><div class="area-branch-head"><b>الفروع المختارة</b><span id="areaSelectedCount" class="pill">0 / 30</span></div><div id="areaBranchCatalog" class="area-branch-catalog"><p class="subtle">جارٍ تحميل قائمة الفروع…</p></div><div class="portal-admin-actions"><button class="primary" type="button" onclick="WareedPortal.saveAreaGroup()">حفظ المجموعة والمستخدم</button><button class="soft" type="button" onclick="WareedPortal.resetAreaForm()">إلغاء</button></div><p id="areaAdminMessage" class="subtle"></p></div><div class="section"><div class="section-head"><h2>مجموعات المناطق</h2><span id="areaGroupsCount" class="pill">0</span></div><div id="areaGroupsList" class="area-admin-list"></div></div>';
+    if(settings){main.insertBefore(regions,settings);main.insertBefore(admin,settings)}else{main.append(regions,admin)}
+  }
+  function money(value){return new Intl.NumberFormat('en-US',{maximumFractionDigits:0}).format(Number(value||0))+' ر.س'}
+  function rate(value){return new Intl.NumberFormat('en-US',{maximumFractionDigits:1}).format(Number(value||0))+'%'}
+  function renderRegions(){
+    const host=document.getElementById('areaReports');if(!host)return;
+    const groups=areaPayload?.groups||[];
+    const updated=document.getElementById('areaPageUpdated');if(updated)updated.textContent='آخر تحديث: '+(areaPayload?.generatedAt?new Date(areaPayload.generatedAt).toLocaleString('ar-SA'):'—');
+    const title=document.getElementById('areaPageTitle');if(title)title.textContent=groups.length===1&&!areaPayload?.canManage?groups[0].title:'أداء جميع المناطق';
+    host.innerHTML=groups.map(group=>'<article class="area-report-card"><div class="area-report-title"><div><span>عنوان الاجتماع</span><h2>'+window.escapeHtml(group.title)+'</h2><small>'+(group.manager?'مدير المنطقة: '+window.escapeHtml(group.manager.username):'لم يُربط مدير')+'</small></div><span class="pill">'+group.branches.length+' فرع</span></div><div class="area-cities">'+group.branches.map(branch=>'<span>'+window.escapeHtml(branch.label||branch.branch)+'</span>').join('')+'</div><div class="area-metric-grid"><div><span>التارجت الشهري</span><b>'+money(group.metrics.monthTarget)+'</b></div><div><span>الدخل الشهري</span><b>'+money(group.metrics.monthIncome)+'</b><small>'+rate(group.metrics.monthRate)+'</small></div><div><span>التارجت اليومي</span><b>'+money(group.metrics.dailyTarget)+'</b></div><div><span>الدخل اليومي</span><b>'+money(group.metrics.dailyIncome)+'</b><small>'+rate(group.metrics.dailyRate)+'</small></div></div></article>').join('')||'<div class="section empty">لا توجد مجموعة منطقة مرتبطة بهذا الحساب بعد.</div>';
+  }
+  async function loadAreaGroups(){
+    if(!canAction('manageAreas'))return [];
+    const message=document.getElementById('areaAdminMessage');if(message)message.textContent='جارٍ تحميل المجموعات والفروع…';
+    try{const result=await request('webListAreaGroups',{});areaGroups=result.groups||[];areaCatalog=result.catalog||[];renderAreaCatalog();renderAreaGroupsList();if(message)message.textContent='';return areaGroups}catch(error){if(message)message.textContent=error.message;return []}
+  }
+  function selectedAreaBranches(){return [...areaSelectedBranches]}
+  function renderAreaCatalog(){
+    const host=document.getElementById('areaBranchCatalog');if(!host)return;
+    const query=String(document.getElementById('areaBranchSearch')?.value||'').toLowerCase();
+    host.innerHTML=areaCatalog.filter(item=>!query||String(item.branch+' '+item.label+' '+item.city).toLowerCase().includes(query)).map(item=>'<label><input type="checkbox" name="areaBranch" value="'+window.escapeHtml(item.branch)+'" '+(areaSelectedBranches.has(item.branch)?'checked':'')+' onchange="WareedPortal.areaSelectionChanged(this)"><span><b>'+window.escapeHtml(item.label||item.branch)+'</b><small dir="ltr">'+window.escapeHtml(item.branch)+'</small></span></label>').join('')||'<p class="subtle">لا توجد نتائج.</p>';
+    updateAreaSelectedCount();
+  }
+  function areaSelectionChanged(node){
+    if(node.checked&&areaSelectedBranches.size>=30){node.checked=false;window.toast('الحد الأعلى 30 فرعًا لكل مستخدم منطقة')}else if(node.checked)areaSelectedBranches.add(node.value);else areaSelectedBranches.delete(node.value);updateAreaSelectedCount();
+  }
+  function updateAreaSelectedCount(){const node=document.getElementById('areaSelectedCount');if(node)node.textContent=selectedAreaBranches().length+' / 30'}
+  function renderAreaGroupsList(){
+    const host=document.getElementById('areaGroupsList');if(!host)return;document.getElementById('areaGroupsCount').textContent=areaGroups.length;
+    host.innerHTML=areaGroups.map(group=>'<article><div><h3>'+window.escapeHtml(group.title)+'</h3><p>'+(group.manager?window.escapeHtml(group.manager.username):'بلا مستخدم')+' • '+group.branches.length+' فرع • '+(group.enabled?'مفعلة':'موقوفة')+'</p></div><div><button class="soft" onclick="WareedPortal.editAreaGroup(\''+window.escapeJs(group.id)+'\')">تعديل</button><button class="soft danger" onclick="WareedPortal.deleteAreaGroup(\''+window.escapeJs(group.id)+'\')">حذف</button></div></article>').join('')||'<p class="subtle">لا توجد مجموعات مناطق بعد.</p>';
+  }
+  function resetAreaForm(){
+    ['areaGroupId','areaUserId','areaMeetingTitle','areaUsername','areaPassword','areaBranchSearch'].forEach(id=>{const node=document.getElementById(id);if(node)node.value=''});areaSelectedBranches=new Set();const enabled=document.getElementById('areaEnabled');if(enabled)enabled.checked=true;const title=document.getElementById('areaFormTitle');if(title)title.textContent='إضافة مجموعة منطقة';renderAreaCatalog();
+  }
+  function editAreaGroup(id){
+    const group=areaGroups.find(item=>item.id===id);if(!group)return;document.getElementById('areaGroupId').value=group.id;document.getElementById('areaUserId').value=group.manager?.id||'';document.getElementById('areaMeetingTitle').value=group.title;document.getElementById('areaUsername').value=group.manager?.username||'';document.getElementById('areaPassword').value='';document.getElementById('areaEnabled').checked=group.enabled;document.getElementById('areaFormTitle').textContent='تعديل '+group.title;areaSelectedBranches=new Set(group.branches.map(branch=>branch.branch||branch));renderAreaCatalog();scrollTo({top:document.getElementById('areaAdmin').offsetTop,behavior:'smooth'});
+  }
+  async function saveAreaGroup(){
+    const message=document.getElementById('areaAdminMessage');message.textContent='جارٍ حفظ المجموعة والمستخدم…';
+    const group={id:document.getElementById('areaGroupId').value,title:document.getElementById('areaMeetingTitle').value.trim(),enabled:document.getElementById('areaEnabled').checked,branches:selectedAreaBranches()};
+    const user={id:document.getElementById('areaUserId').value,username:document.getElementById('areaUsername').value.trim(),password:document.getElementById('areaPassword').value};
+    try{await request('webUpsertAreaGroup',{group,user});message.textContent='تم حفظ المجموعة وحساب مدير المنطقة.';resetAreaForm();await loadAreaGroups();const refreshed=await request('webBootstrap',{});areaPayload=refreshed.area||areaPayload;renderRegions()}catch(error){message.textContent=error.message}
+  }
+  async function deleteAreaGroup(id){if(!confirm('حذف مجموعة المنطقة وتعطيل حساب مديرها؟'))return;try{await request('webDeleteAreaGroup',{groupId:id});window.toast('تم حذف المجموعة وتعطيل الحساب');await loadAreaGroups()}catch(error){window.toast(error.message)}}
   function renderAdminShell(){
     const section=document.getElementById('users');if(!section)return;
     section.innerHTML='<div class="hero"><h1>إدارة المستخدمين والصلاحيات</h1><p>هذه الصفحة خاصة بحساب المالك فقط</p></div><div class="section"><div class="section-head"><h2 id="portalUserFormTitle">إضافة مستخدم</h2><button class="soft" type="button" onclick="WareedPortal.resetUserForm()">مستخدم جديد</button></div><input type="hidden" id="portalUserId"><div class="portal-admin-grid"><label>اسم المستخدم<input id="portalUserName" name="portal_new_username" dir="ltr" autocomplete="off" data-lpignore="true" data-1p-ignore="true" readonly onfocus="this.removeAttribute(\'readonly\')" placeholder="username"></label><label>كلمة المرور<input id="portalUserPassword" name="portal_new_password" dir="ltr" type="password" autocomplete="new-password" data-lpignore="true" data-1p-ignore="true" readonly onfocus="this.removeAttribute(\'readonly\')" placeholder="مطلوبة للجديد، واتركها فارغة عند عدم التغيير"></label><label class="full"><span><input type="checkbox" id="portalUserEnabled" checked> الحساب مفعل</span></label></div><div class="portal-permission-groups"><div class="portal-permission-box"><h3>الصفحات التي يستطيع فتحها</h3><div class="portal-permission-list" id="portalViewPermissions"></div></div><div class="portal-permission-box"><h3>الإجراءات التي يستطيع تنفيذها</h3><div class="portal-permission-list" id="portalActionPermissions"></div></div></div><div class="portal-admin-actions"><button class="primary" type="button" onclick="WareedPortal.saveUser()">حفظ المستخدم والصلاحيات</button><button class="soft" type="button" onclick="WareedPortal.resetUserForm()">إلغاء التعديل</button></div><p class="subtle" id="portalUserMessage"></p></div><div class="section"><div class="section-head"><h2>المستخدمون</h2><span class="pill" id="portalUsersCount">0</span></div><div class="table-scroll"><table class="portal-users-table"><thead><tr><th>المستخدم</th><th>الحالة</th><th>الدور</th><th>الصفحات</th><th>الإجراءات</th><th>آخر دخول</th><th>التحكم</th></tr></thead><tbody id="portalUsersBody"></tbody></table></div></div>';
@@ -232,7 +292,7 @@
   function renderUsers(){
     const body=document.getElementById('portalUsersBody');if(!body)return;
     document.getElementById('portalUsersCount').textContent=users.length;
-    body.innerHTML=users.map(user=>'<tr class="'+(user.enabled?'':'portal-user-off')+'"><td><b dir="ltr">'+window.escapeHtml(user.username)+'</b></td><td>'+(user.enabled?'مفعل':'موقوف')+'</td><td><span class="portal-role '+user.role+'">'+(user.role==='owner'?'المالك':'مستخدم')+'</span></td><td>'+((user.permissions?.views||[]).length)+' صفحة</td><td>'+((user.permissions?.actions||[]).length)+' إجراء</td><td dir="ltr">'+(user.lastLoginAt?new Date(user.lastLoginAt).toLocaleString('ar-SA'):'—')+'</td><td><div class="portal-user-actions"><button class="soft" onclick="WareedPortal.editUser(\''+window.escapeJs(user.id)+'\')">تعديل</button>'+(user.role==='owner'?'':'<button class="soft danger" onclick="WareedPortal.deleteUser(\''+window.escapeJs(user.username)+'\')">حذف</button>')+'</div></td></tr>').join('')||'<tr><td colspan="7">لا يوجد مستخدمون</td></tr>';
+    body.innerHTML=users.map(user=>'<tr class="'+(user.enabled?'':'portal-user-off')+'"><td><b dir="ltr">'+window.escapeHtml(user.username)+'</b></td><td>'+(user.enabled?'مفعل':'موقوف')+'</td><td><span class="portal-role '+user.role+'">'+(user.role==='owner'?'المالك':user.role==='area_manager'?'مدير منطقة':'مستخدم')+'</span></td><td>'+((user.permissions?.views||[]).length)+' صفحة</td><td>'+((user.permissions?.actions||[]).length)+' إجراء</td><td dir="ltr">'+(user.lastLoginAt?new Date(user.lastLoginAt).toLocaleString('ar-SA'):'—')+'</td><td><div class="portal-user-actions"><button class="soft" onclick="WareedPortal.editUser(\''+window.escapeJs(user.id)+'\')">تعديل</button>'+(user.role==='owner'?'':'<button class="soft danger" onclick="WareedPortal.deleteUser(\''+window.escapeJs(user.username)+'\')">حذف</button>')+'</div></td></tr>').join('')||'<tr><td colspan="7">لا يوجد مستخدمون</td></tr>';
   }
   function resetUserForm(){
     ['portalUserId','portalUserName','portalUserPassword'].forEach(id=>{const node=document.getElementById(id);if(node)node.value=''});const enabled=document.getElementById('portalUserEnabled');if(enabled)enabled.checked=true;document.querySelectorAll('[name=portalView],[name=portalAction]').forEach(node=>node.checked=false);const title=document.getElementById('portalUserFormTitle');if(title)title.textContent='إضافة مستخدم';userFormTouched=false;
@@ -252,5 +312,5 @@
     if(session?.token)saveSession(null);
     showGate('');
   }
-  window.WareedPortal={start,request,logout,loadUsers,renderUsers,editUser,deleteUser,saveUser,resetUserForm,permissions,canView,canAction,askAi,feedbackAi,loadAiStatus,saveAiConfig};
+  window.WareedPortal={start,request,logout,loadUsers,renderUsers,editUser,deleteUser,saveUser,resetUserForm,permissions,canView,canAction,askAi,feedbackAi,loadAiStatus,saveAiConfig,loadAreaGroups,renderAreaCatalog,areaSelectionChanged,resetAreaForm,editAreaGroup,saveAreaGroup,deleteAreaGroup};
 })();
