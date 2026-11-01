@@ -137,11 +137,15 @@
     try{const result=await request('webSaveAiConfig',{apiKey,model:model?.value||'gpt-6-astra'});if(key)key.value='';renderAiStatus(result);message.textContent='تم ربط Wareed AI بنجاح. الأسئلة الجديدة ستستخدم النموذج الفعلي مع أدوات تحليل بيانات وريد.'}catch(error){message.textContent=error.message||'تعذر ربط OpenAI.'}finally{button.disabled=false}
   }
   function applyPermissions(){
+    const areaManager=session?.user?.role==='area_manager';
+    document.body.classList.toggle('area-manager-mode',areaManager);
     document.querySelectorAll('.nav[data-page]').forEach(node=>{const page=node.dataset.page;if(session?.user?.role==='area_manager'&&page!=='regions'){node.remove();return}node.hidden=page==='users'?session?.user?.role!=='owner':page==='areaAdmin'?!canAction('manageAreas'):!canView(page)});
     document.querySelectorAll('[data-owner-only]').forEach(node=>{if(node.matches('[data-page]'))return;node.hidden=session?.user?.role!=='owner'});
     const aiFab=document.getElementById('wareedAiFab');if(aiFab)aiFab.hidden=!canView('ai');if(!canView('ai'))window.openWareedAiMini?.(false);
     const refresh=document.querySelector('.top .icon[onclick*="refreshData"]');if(refresh)refresh.hidden=!canAction('refresh');
-    if(!canView(window.CURRENT_PAGE||'home')){
+    if(areaManager){
+      if(window.CURRENT_PAGE!=='regions')window.go('regions');
+    }else if(!canView(window.CURRENT_PAGE||'home')){
       const first=(permissions().views||[]).find(view=>document.getElementById(view))||'home';window.go(first);
     }
   }
@@ -230,7 +234,15 @@
     const groups=areaPayload?.groups||[];
     const updated=document.getElementById('areaPageUpdated');if(updated)updated.textContent='آخر تحديث: '+(areaPayload?.generatedAt?new Date(areaPayload.generatedAt).toLocaleString('ar-SA'):'—');
     const title=document.getElementById('areaPageTitle');if(title)title.textContent=groups.length===1&&!areaPayload?.canManage?groups[0].title:'أداء جميع المناطق';
-    host.innerHTML=groups.map(group=>'<article class="area-report-card"><div class="area-report-title"><div><span>عنوان الاجتماع</span><h2>'+window.escapeHtml(group.title)+'</h2><small>'+(group.manager?'مدير المنطقة: '+window.escapeHtml(group.manager.username):'لم يُربط مدير')+'</small></div><span class="pill">'+group.branches.length+' فرع</span></div><div class="area-cities">'+group.branches.map(branch=>'<span>'+window.escapeHtml(branch.label||branch.branch)+'</span>').join('')+'</div><div class="area-metric-grid"><div><span>التارجت الشهري</span><b>'+money(group.metrics.monthTarget)+'</b></div><div><span>الدخل الشهري</span><b>'+money(group.metrics.monthIncome)+'</b><small>'+rate(group.metrics.monthRate)+'</small></div><div><span>التارجت اليومي</span><b>'+money(group.metrics.dailyTarget)+'</b></div><div><span>الدخل اليومي</span><b>'+money(group.metrics.dailyIncome)+'</b><small>'+rate(group.metrics.dailyRate)+'</small></div></div></article>').join('')||'<div class="section empty">لا توجد مجموعة منطقة مرتبطة بهذا الحساب بعد.</div>';
+    const isAreaManager=session?.user?.role==='area_manager';
+    host.classList.toggle('area-manager-reports',isAreaManager);
+    host.innerHTML=groups.map(group=>{
+      const cities=[...new Set(group.branches.map(branch=>String(branch.city||branch.label||branch.branch||'').trim()).filter(Boolean))];
+      const reportHead=isAreaManager?'<div class="area-screen-head"><img src="wareed-logo.png" alt="مختبرات وريد الطبية"><div class="area-meeting-label">اجتماع المنطقة</div><button class="area-screen-logout" type="button" onclick="WareedPortal.logout()">تسجيل الخروج</button></div>':'<div class="area-report-title"><div><span>عنوان الاجتماع</span><h2>'+window.escapeHtml(group.title)+'</h2><small>'+(group.manager?'مدير المنطقة: '+window.escapeHtml(group.manager.username):'لم يُربط مدير')+'</small></div><span class="pill">'+group.branches.length+' فرع</span></div>';
+      const managerTitle=isAreaManager?'<h1 class="area-screen-title">'+window.escapeHtml(group.title)+'</h1><p class="area-screen-scope">'+cities.map(window.escapeHtml).join(' <b>+</b> ')+'</p>':'';
+      const cityChips=isAreaManager?'':'<div class="area-cities">'+cities.map(city=>'<span>'+window.escapeHtml(city)+'</span>').join('')+'</div>';
+      return '<article class="area-report-card'+(isAreaManager?' area-manager-card':'')+'">'+reportHead+managerTitle+cityChips+'<div class="area-metric-grid"><div><span>التارجت الشهري</span><b>'+money(group.metrics.monthTarget)+'</b></div><div><span>الدخل الشهري</span><b>'+money(group.metrics.monthIncome)+'</b><small>'+rate(group.metrics.monthRate)+'</small></div><div><span>التارجت اليومي</span><b>'+money(group.metrics.dailyTarget)+'</b></div><div><span>الدخل اليومي</span><b>'+money(group.metrics.dailyIncome)+'</b><small>'+rate(group.metrics.dailyRate)+'</small></div></div></article>';
+    }).join('')||'<div class="section empty">لا توجد مجموعة منطقة مرتبطة بهذا الحساب بعد.</div>';
   }
   async function loadAreaGroups(){
     if(!canAction('manageAreas'))return [];
