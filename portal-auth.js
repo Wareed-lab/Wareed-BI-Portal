@@ -238,6 +238,8 @@
     try{return new Intl.DateTimeFormat('ar-SA-u-nu-latn',{timeZone:'Asia/Riyadh',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(date)}catch(_){return date.toLocaleString('ar-SA')}
   }
   function areaRefreshIcon(){return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0-14.9-4.3L3 9m0 0V4m0 5h5M4 13a8.1 8.1 0 0 0 14.9 4.3L21 15m0 0v5m0-5h-5"/></svg><span>تحديث</span>'}
+  function areaPayloadSignal(payload){return (payload?.groups||[]).reduce((sum,group)=>sum+Math.max(0,Number(group?.metrics?.monthTarget)||0)+Math.max(0,Number(group?.metrics?.monthIncome)||0),0)}
+  function areaPayloadIsComplete(next,previous){if(!next||!Array.isArray(next.groups))return false;const oldSignal=areaPayloadSignal(previous),newSignal=areaPayloadSignal(next);return !(oldSignal>0&&newSignal<=0)}
   function renderRegions(){
     const host=document.getElementById('areaReports');if(!host)return;
     const groups=areaPayload?.groups||[];
@@ -263,7 +265,7 @@
     if(areaRefreshRunning||!session?.token)return null;
     areaRefreshRunning=true;renderRegions();
     try{
-      const result=await request('webBootstrap',{});session.user=result.user;areaPayload=result.area||areaPayload;saveSession(session);window.applyCloudBootstrap(result);renderRegions();if(!silent)window.toast('تم تحديث بيانات المنطقة • '+areaUpdateStamp(areaPayload?.generatedAt));return result;
+      const result=await request('webBootstrap',{}),nextArea=result.area;if(!areaPayloadIsComplete(nextArea,areaPayload))throw new Error('التحديث الجديد لم يكتمل؛ بقيت آخر أرقام صحيحة ظاهرة');session.user=result.user;areaPayload=nextArea;saveSession(session);window.applyCloudBootstrap(result);renderRegions();if(!silent)window.toast('تم تحديث بيانات المنطقة • '+areaUpdateStamp(areaPayload?.generatedAt));return result;
     }catch(error){
       if(isSessionFailure(error)){saveSession(null);clearInterval(areaLiveTimer);showGate(error.message||'انتهت الجلسة.');return null}
       if(!silent)window.toast(error.message||'تعذر تحديث بيانات المنطقة');return null;
