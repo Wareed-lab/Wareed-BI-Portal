@@ -18,6 +18,9 @@
   let areaGroups=[];
   let areaCatalog=[];
   let areaSelectedBranches=new Set();
+  let areaExpandedGroups=new Set();
+  let areaLiveTimer=null;
+  let areaRefreshRunning=false;
 
   function diagnostics(){try{const value=JSON.parse(localStorage.getItem(DIAGNOSTICS_KEY)||'[]');return Array.isArray(value)?value:[]}catch(_){return []}}
   function redactDiagnosticText(value){
@@ -108,7 +111,7 @@
     }catch(err){error.textContent=err.message||'تعذر تسجيل الدخول.'}finally{button.disabled=false}
   }
   async function logout(){
-    try{if(session?.token)await request('webLogout',{})}catch(_){}saveSession(null);clearInterval(window.PORTABLE_LIVE_TIMER);showGate('تم تسجيل الخروج.');
+    try{if(session?.token)await request('webLogout',{})}catch(_){}saveSession(null);areaExpandedGroups.clear();clearInterval(window.PORTABLE_LIVE_TIMER);clearInterval(areaLiveTimer);showGate('تم تسجيل الخروج.');
   }
   function permissions(){return session?.user?.permissions||{views:[],actions:[]}}
   function canView(view){return session?.user?.role==='owner'||permissions().views?.includes(view)}
@@ -201,12 +204,12 @@
   }
   async function loadBootstrap(silent){
     try{
-      const result=await request('webBootstrap',{});session.user=result.user;areaPayload=result.area||null;saveSession(session);window.applyCloudBootstrap(result);window.applyLocalConfig({cloudEndpoint:CONFIG.endpoint,liveIntervalMinutes:1},{name:result.user.username,email:result.user.username,role:result.user.role},diagnostics());activateSessionShell(result.user);renderRegions();window.startPortableLive?.();if(!silent)window.toast('تم تحميل التقارير بنجاح');return result;
+      const result=await request('webBootstrap',{});session.user=result.user;areaPayload=result.area||null;saveSession(session);window.applyCloudBootstrap(result);window.applyLocalConfig({cloudEndpoint:CONFIG.endpoint,liveIntervalMinutes:1},{name:result.user.username,email:result.user.username,role:result.user.role},diagnostics());activateSessionShell(result.user);renderRegions();if(canView('regions'))startAreaLive();else window.startPortableLive?.();if(!silent)window.toast('تم تحميل التقارير بنجاح');return result;
     }catch(err){
       const message=err.message||'تعذر الاتصال بخدمة Wareed.';
       if(!err.diagnosticRecorded)recordDiagnostic('error',err.code||'WEB-BOOTSTRAP-FAILED',message,'فشل تحميل بيانات الداشبورد بعد التحقق من الجلسة.');
       if(isSessionFailure(err)){
-        saveSession(null);clearInterval(window.PORTABLE_LIVE_TIMER);showGate(message);
+        saveSession(null);clearInterval(window.PORTABLE_LIVE_TIMER);clearInterval(areaLiveTimer);showGate(message);
       }else if(document.body.classList.contains('portal-locked')){
         showGate(message+' الجلسة محفوظة؛ أعد تحميل الصفحة للمحاولة مرة أخرى.');
       }else{
@@ -229,6 +232,12 @@
   }
   function money(value){return new Intl.NumberFormat('en-US',{maximumFractionDigits:0}).format(Number(value||0))+' ر.س'}
   function rate(value){return new Intl.NumberFormat('en-US',{maximumFractionDigits:1}).format(Number(value||0))+'%'}
+  function areaUpdateStamp(value){
+    if(!value)return '—';
+    const date=new Date(value);if(Number.isNaN(date.getTime()))return String(value);
+    try{return new Intl.DateTimeFormat('ar-SA-u-nu-latn',{timeZone:'Asia/Riyadh',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(date)}catch(_){return date.toLocaleString('ar-SA')}
+  }
+  function areaRefreshIcon(){return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0-14.9-4.3L3 9m0 0V4m0 5h5M4 13a8.1 8.1 0 0 0 14.9 4.3L21 15m0 0v5m0-5h-5"/></svg><span>تحديث</span>'}
   function renderRegions(){
     const host=document.getElementById('areaReports');if(!host)return;
     const groups=areaPayload?.groups||[];
@@ -238,14 +247,32 @@
     host.classList.toggle('area-manager-reports',isAreaManager);
     host.innerHTML=groups.map(group=>{
       const cities=[...new Set(group.branches.map(branch=>String(branch.city||branch.label||branch.branch||'').trim()).filter(Boolean))];
-      const actions=isAreaManager?'<div class="area-screen-actions"><button class="area-screen-logout" type="button" onclick="WareedPortal.logout()">تسجيل الخروج</button><button class="area-screen-branches-toggle" type="button" onclick="WareedPortal.toggleAreaBranches(this)">عرض الفروع</button></div>':'<div class="area-screen-actions"><button class="area-screen-branches-toggle" type="button" onclick="WareedPortal.toggleAreaBranches(this)">عرض الفروع</button><small>'+(group.manager?'مدير المنطقة: '+window.escapeHtml(group.manager.username):'لم يُربط مدير')+'</small></div>';
-      const reportHead='<div class="area-screen-head"><img src="wareed-logo.png" alt="مختبرات وريد الطبية"><div class="area-meeting-label">اجتماع المنطقة</div>'+actions+'</div>';
-      const meetingTitle='<h1 class="area-screen-title">'+window.escapeHtml(group.title)+'</h1><p class="area-screen-description">'+window.escapeHtml(group.description||'')+'</p><div class="area-screen-branches" hidden>'+cities.map(city=>'<span>'+window.escapeHtml(city)+'</span>').join('')+'</div>';
-      return '<article class="area-report-card area-meeting-card '+(isAreaManager?'area-manager-card':'area-admin-meeting-card')+'">'+reportHead+meetingTitle+'<div class="area-metric-grid"><div><span>التارجت الشهري</span><b>'+money(group.metrics.monthTarget)+'</b></div><div><span>تحقيق الشهر</span><b>'+money(group.metrics.monthIncome)+'</b><small>'+rate(group.metrics.monthRate)+'</small></div><div><span>التارجت اليومي</span><b>'+money(group.metrics.dailyTarget)+'</b></div><div><span>تحقيق اليوم</span><b>'+money(group.metrics.dailyIncome)+'</b><small>'+rate(group.metrics.dailyRate)+'</small></div></div></article>';
+      const expanded=areaExpandedGroups.has(group.id),branchButtonLabel=expanded?'إخفاء الفروع':'عرض الفروع';
+      const actions=isAreaManager?'<div class="area-screen-actions"><button class="area-screen-logout" type="button" onclick="WareedPortal.logout()">تسجيل الخروج</button><button class="area-screen-branches-toggle" type="button" onclick="WareedPortal.toggleAreaBranches(this)">'+branchButtonLabel+'</button></div>':'<div class="area-screen-actions"><button class="area-screen-branches-toggle" type="button" onclick="WareedPortal.toggleAreaBranches(this)">'+branchButtonLabel+'</button><small>'+(group.manager?'مدير المنطقة: '+window.escapeHtml(group.manager.username):'لم يُربط مدير')+'</small></div>';
+      const brand='<div class="area-screen-brand"><img src="wareed-logo.png" alt="مختبرات وريد الطبية"><small>آخر تحديث: <time datetime="'+window.escapeHtml(areaPayload?.generatedAt||'')+'">'+window.escapeHtml(areaUpdateStamp(areaPayload?.generatedAt))+'</time></small></div>';
+      const refresh='<button class="area-screen-refresh'+(areaRefreshRunning?' is-loading':'')+'" type="button" onclick="WareedPortal.refreshAreaDashboard(false)" aria-label="تحديث بيانات المنطقة الآن" title="تحديث بيانات المنطقة الآن" '+(areaRefreshRunning?'disabled':'')+'>'+areaRefreshIcon()+'</button>';
+      const reportHead='<div class="area-screen-head">'+brand+refresh+'<div class="area-meeting-label">اجتماع المنطقة</div>'+actions+'</div>';
+      const meetingTitle='<h1 class="area-screen-title">'+window.escapeHtml(group.title)+'</h1><p class="area-screen-description">'+window.escapeHtml(group.description||'')+'</p><div class="area-screen-branches" data-area-id="'+window.escapeHtml(group.id)+'" '+(expanded?'':'hidden')+'>'+cities.map(city=>'<span>'+window.escapeHtml(city)+'</span>').join('')+'</div>';
+      return '<article class="area-report-card area-meeting-card '+(isAreaManager?'area-manager-card':'area-admin-meeting-card')+'" data-area-id="'+window.escapeHtml(group.id)+'">'+reportHead+meetingTitle+'<div class="area-metric-grid"><div><span>التارجت الشهري</span><b>'+money(group.metrics.monthTarget)+'</b></div><div><span>تحقيق الشهر</span><b>'+money(group.metrics.monthIncome)+'</b><small>'+rate(group.metrics.monthRate)+'</small></div><div><span>التارجت اليومي</span><b>'+money(group.metrics.dailyTarget)+'</b></div><div><span>تحقيق اليوم</span><b>'+money(group.metrics.dailyIncome)+'</b><small>'+rate(group.metrics.dailyRate)+'</small></div></div></article>';
     }).join('')||'<div class="section empty">لا توجد مجموعة منطقة مرتبطة بهذا الحساب بعد.</div>';
   }
   function toggleAreaBranches(button){
-    const list=button?.closest('.area-meeting-card')?.querySelector('.area-screen-branches');if(!list)return;list.hidden=!list.hidden;button.textContent=list.hidden?'عرض الفروع':'إخفاء الفروع';
+    const card=button?.closest('.area-meeting-card'),list=card?.querySelector('.area-screen-branches');if(!list)return;list.hidden=!list.hidden;const id=card?.dataset.areaId||list.dataset.areaId;if(id){if(list.hidden)areaExpandedGroups.delete(id);else areaExpandedGroups.add(id)}button.textContent=list.hidden?'عرض الفروع':'إخفاء الفروع';
+  }
+  async function refreshAreaDashboard(silent=true){
+    if(areaRefreshRunning||!session?.token)return null;
+    areaRefreshRunning=true;renderRegions();
+    try{
+      const result=await request('webBootstrap',{});session.user=result.user;areaPayload=result.area||areaPayload;saveSession(session);window.applyCloudBootstrap(result);renderRegions();if(!silent)window.toast('تم تحديث بيانات المنطقة • '+areaUpdateStamp(areaPayload?.generatedAt));return result;
+    }catch(error){
+      if(isSessionFailure(error)){saveSession(null);clearInterval(areaLiveTimer);showGate(error.message||'انتهت الجلسة.');return null}
+      if(!silent)window.toast(error.message||'تعذر تحديث بيانات المنطقة');return null;
+    }finally{areaRefreshRunning=false;renderRegions()}
+  }
+  function startAreaLive(){
+    clearInterval(window.PORTABLE_LIVE_TIMER);clearInterval(areaLiveTimer);
+    const seconds=Math.max(30,Number(CONFIG.pollSeconds||60));
+    areaLiveTimer=setInterval(()=>{if(!document.hidden&&!document.body.classList.contains('portal-locked'))refreshAreaDashboard(true)},seconds*1000);
   }
   async function loadAreaGroups(){
     if(!canAction('manageAreas'))return [];
@@ -327,5 +354,5 @@
     if(session?.token)saveSession(null);
     showGate('');
   }
-  window.WareedPortal={start,request,logout,loadUsers,renderUsers,editUser,deleteUser,saveUser,resetUserForm,permissions,canView,canAction,askAi,feedbackAi,loadAiStatus,saveAiConfig,loadAreaGroups,renderAreaCatalog,areaSelectionChanged,resetAreaForm,editAreaGroup,saveAreaGroup,deleteAreaGroup,toggleAreaBranches};
+  window.WareedPortal={start,request,logout,loadUsers,renderUsers,editUser,deleteUser,saveUser,resetUserForm,permissions,canView,canAction,askAi,feedbackAi,loadAiStatus,saveAiConfig,loadAreaGroups,renderAreaCatalog,areaSelectionChanged,resetAreaForm,editAreaGroup,saveAreaGroup,deleteAreaGroup,toggleAreaBranches,refreshAreaDashboard,startAreaLive};
 })();
