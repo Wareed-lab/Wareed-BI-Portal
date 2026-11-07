@@ -254,7 +254,8 @@
     const previousTitle=document.title,date=document.getElementById('ownerRegionDate')?.value||new Date().toISOString().slice(0,10);
     document.title='Wareed-MTD-Regions-'+date;document.body.classList.add('owner-regions-print-mode');
     const cleanup=()=>{document.body.classList.remove('owner-regions-print-mode');document.title=previousTitle;removeEventListener('afterprint',cleanup)};
-    addEventListener('afterprint',cleanup);setTimeout(()=>window.print(),80);setTimeout(()=>{if(document.body.classList.contains('owner-regions-print-mode'))cleanup()},30000);
+    const print=()=>{if(window.WareedAndroid&&typeof window.WareedAndroid.printReport==='function')window.WareedAndroid.printReport(document.title);else window.print()};
+    addEventListener('afterprint',cleanup);setTimeout(print,120);setTimeout(()=>{if(document.body.classList.contains('owner-regions-print-mode'))cleanup()},120000);
   }
   function ownerAreaSummary(rows){
     const data=Array.isArray(rows)?rows:[];const sum=field=>data.reduce((total,row)=>total+Math.max(0,Number(row?.[field])||0),0);const income=sum('income'),target=sum('target'),patients=sum('patients');
