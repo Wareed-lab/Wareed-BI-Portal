@@ -133,3 +133,33 @@
 .owner-branch-legend .acc:before{height:0;background:none;border-top:4px solid #1e5f97;border-radius:0}
 .owner-branch-legend .ticket:before{height:0;background:none;border-top:4px solid #7a3182;border-radius:0}
 @media(max-width:650px){.owner-branch-chart svg{min-width:0}.owner-branch-chart .line-point:nth-child(even) .line-point-label,.owner-branch-chart .sales-value{display:none}}
+
+/* Keep target guides straight, quiet, and behind the visible values. */
+.owner-branches-summary{grid-template-columns:repeat(6,minmax(0,1fr))}
+.owner-city-mini-chart .target-line,.owner-branch-chart .target-line{stroke:#dca91d;stroke-width:2.25;stroke-dasharray:10 10;opacity:.6}
+.owner-branch-legend .target:before{border-top-width:3px;opacity:.7}
+
+@media print{
+  body.owner-branches-print-mode{margin:0!important;background:#fff!important}
+  body.owner-branches-print-mode *{visibility:hidden!important}
+  body.owner-branches-print-mode #ownerBranches,body.owner-branches-print-mode #ownerBranches *{visibility:visible!important}
+  body.owner-branches-print-mode #ownerBranches{display:block!important;position:absolute!important;inset:0 auto auto 0!important;width:100%!important;margin:0!important;padding:0!important;background:#fff!important}
+  body.owner-branches-print-mode .owner-branches-hero{margin:0 0 5mm!important;padding:7mm!important;border-radius:0!important;break-after:avoid}
+  body.owner-branches-print-mode .owner-regions-hero-tools,body.owner-branches-print-mode .owner-branches-jump{display:none!important}
+  body.owner-branches-print-mode .owner-branches-summary{grid-template-columns:repeat(6,1fr)!important;gap:5px!important;margin:0 3mm 5mm!important}
+  body.owner-branches-print-mode .owner-branches-summary article{min-height:0!important;padding:8px!important;border-radius:10px!important;box-shadow:none!important}
+  body.owner-branches-print-mode .owner-branches-summary span,body.owner-branches-print-mode .owner-branches-summary small{font-size:7px!important}
+  body.owner-branches-print-mode .owner-branches-summary b{font-size:14px!important}
+  body.owner-branches-print-mode .owner-branches-content{display:block!important;padding:0 3mm!important}
+  body.owner-branches-print-mode .owner-branches-region{margin:0 0 5mm!important;padding:0!important;border:0!important;background:#fff!important;box-shadow:none!important;break-before:page}
+  body.owner-branches-print-mode .owner-branches-region:first-child{break-before:auto}
+  body.owner-branches-print-mode .owner-branches-region-head{margin:0 0 3mm!important;padding:5mm!important;border-radius:12px!important;break-after:avoid}
+  body.owner-branches-print-mode .owner-branch-card{margin:0 0 4mm!important;padding:10px!important;box-shadow:none!important;break-inside:avoid;page-break-inside:avoid}
+  body.owner-branches-print-mode .owner-branch-kpis{grid-template-columns:repeat(6,1fr)!important;gap:4px!important}
+  body.owner-branches-print-mode .owner-branch-kpis p{min-height:0!important;padding:6px!important}
+  body.owner-branches-print-mode .owner-branch-kpis span{font-size:6px!important}
+  body.owner-branches-print-mode .owner-branch-kpis b{font-size:9px!important}
+  body.owner-branches-print-mode .owner-branch-chart{height:82mm!important;overflow:hidden!important}
+  body.owner-branches-print-mode .owner-branch-chart svg{width:100%!important;height:100%!important}
+  body.owner-branches-print-mode .owner-branch-legend{font-size:7px!important}
+}
