@@ -2,6 +2,7 @@
   'use strict';
   const CONFIG=window.WAREED_PORTAL_CONFIG||{};
   const SESSION_KEY='wareedBiWebSessionV1';
+  const BOOTSTRAP_CACHE_KEY='wareedBiBootstrapCacheV1';
   const DIAGNOSTICS_KEY='wareedDiagnostics';
   const DIAGNOSTICS_LIMIT=60;
   const VIEW_LABELS={home:'الرئيسية',executive:'التقرير التنفيذي',daily:'التقرير اليومي',salesComparison:'مركز المقارنات',ai:'Wareed AI',monthly:'التقرير الشهري',reservations:'تقرير الحجوزات',archive:'التقارير السابقة',send:'إرسال تقرير',recipients:'مستلمو التقارير',diagnostics:'التشخيص',settings:'الإعدادات',regions:'المناطق',ownerRegions:'MTD المناطق',ownerBranches:'MTD الفروع'};
@@ -22,6 +23,10 @@
   let areaLiveTimer=null;
   let areaRefreshRunning=false;
   let ownerRegionsEmailRequestId='';
+  let activePage='home';
+  let bootstrapPayload=null;
+  const deferredSnapshots={};
+  const deferredSectionLoads=new Map();
 
   function diagnostics(){try{const value=JSON.parse(localStorage.getItem(DIAGNOSTICS_KEY)||'[]');return Array.isArray(value)?value:[]}catch(_){return []}}
   function redactDiagnosticText(value){
@@ -47,6 +52,18 @@
 
   function readSession(){try{const value=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');return value&&value.token?value:null}catch(_){return null}}
   function saveSession(value){session=value;if(value)localStorage.setItem(SESSION_KEY,JSON.stringify(value));else localStorage.removeItem(SESSION_KEY)}
+  function readBootstrapCache(){try{const value=JSON.parse(localStorage.getItem(BOOTSTRAP_CACHE_KEY)||'null');return value&&value.user&&value.snapshot?value:null}catch(_){return null}}
+  function saveBootstrapCache(result){
+    try{
+      const snapshot=result?.snapshot||{},area=result?.area||null,cache={ok:true,serverTime:result?.serverTime||new Date().toISOString(),user:result?.user,snapshot:{version:snapshot.version,generatedAt:snapshot.generatedAt,source:snapshot.source,metrics:snapshot.metrics||{},daily:snapshot.daily||{rows:[]},monthly:snapshot.monthly||{rows:[]},executive:snapshot.executive||{trend:[],heatMap:[],months:{}},reservations:{visits:[],branches:[],employees:[]},comparisons:{sales:[],reservations:[]}},area:area?{monthKey:area.monthKey,generatedAt:area.generatedAt,canManage:area.canManage,groups:area.groups||[]}:null,target:result?.target||null,monthly:result?.monthly||null};
+      localStorage.setItem(BOOTSTRAP_CACHE_KEY,JSON.stringify(cache));
+    }catch(_){try{localStorage.removeItem(BOOTSTRAP_CACHE_KEY)}catch(__){}}
+  }
+  function applyBootstrapCache(){
+    const cached=readBootstrapCache();if(!cached||!session?.user||String(cached.user?.username||'')!==String(session.user.username||''))return false;
+    bootstrapPayload=cached;areaPayload=cached.area||null;mergeDeferredSnapshots(bootstrapPayload);window.applyCloudBootstrap?.(bootstrapPayload);window.applyLocalConfig?.({cloudEndpoint:CONFIG.endpoint,liveIntervalMinutes:3},{name:session.user.username,email:session.user.username,role:session.user.role},diagnostics());
+    const status=document.getElementById('sourceStatus');if(status)status.textContent='آخر نسخة صحيحة محفوظة • جارٍ جلب التحديث بالخلفية';return true;
+  }
   function deviceId(){let id=localStorage.getItem('wareedBiDeviceId');if(!id){id='web-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);localStorage.setItem('wareedBiDeviceId',id)}return id}
   async function request(action,payload,withToken=true){
     if(!CONFIG.endpoint){
@@ -56,7 +73,7 @@
     }
     const body={action,...(payload||{})};
     if(withToken&&session?.token)body.token=session.token;
-    const started=Date.now(),timeoutMs=action==='webAskAi'?45000:30000,attempts=action==='webAskAi'?2:1;let response,lastCause;
+    const started=Date.now(),timeoutMs=action==='webAskAi'?45000:(action==='webBootstrap'||action==='webLoadSection')?120000:30000,attempts=action==='webAskAi'?2:1;let response,lastCause;
     for(let attempt=1;attempt<=attempts&&!response;attempt++){
       const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),timeoutMs);
       try{response=await fetch(CONFIG.endpoint,{method:'POST',redirect:'follow',cache:'no-store',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body),signal:controller.signal})}
@@ -112,7 +129,7 @@
     }catch(err){error.textContent=err.message||'تعذر تسجيل الدخول.'}finally{button.disabled=false}
   }
   async function logout(){
-    try{if(session?.token)await request('webLogout',{})}catch(_){}saveSession(null);areaExpandedGroups.clear();clearInterval(window.PORTABLE_LIVE_TIMER);clearInterval(areaLiveTimer);showGate('تم تسجيل الخروج.');
+    try{if(session?.token)await request('webLogout',{})}catch(_){}saveSession(null);localStorage.removeItem(BOOTSTRAP_CACHE_KEY);bootstrapPayload=null;areaPayload=null;Object.keys(deferredSnapshots).forEach(key=>delete deferredSnapshots[key]);activePage='home';areaExpandedGroups.clear();clearInterval(window.PORTABLE_LIVE_TIMER);clearInterval(areaLiveTimer);showGate('تم تسجيل الخروج.');
   }
   function permissions(){return session?.user?.permissions||{views:[],actions:[]}}
   function canView(view){return session?.user?.role==='owner'||permissions().views?.includes(view)}
@@ -165,6 +182,20 @@
     applyPermissions();if(user.role==='owner'){if(!document.getElementById('portalUserFormTitle'))renderAdminShell();void loadUsers()}if(canView('ai'))void loadAiStatus();hideGate();
     const status=document.getElementById('sourceStatus');if(status&&statusText)status.textContent=statusText;
   }
+  function mergeDeferredSnapshots(payload){
+    if(!payload?.snapshot)return payload;
+    Object.values(deferredSnapshots).forEach(patch=>{
+      if(patch?.reservations)payload.snapshot.reservations=patch.reservations;
+      if(patch?.comparisons)payload.snapshot.comparisons={...(payload.snapshot.comparisons||{}),...patch.comparisons};
+    });
+    return payload;
+  }
+  async function loadDeferredSection(section){
+    if(!['salesComparison','reservations'].includes(section)||!canView(section)||deferredSnapshots[section])return;
+    if(deferredSectionLoads.has(section))return deferredSectionLoads.get(section);
+    const task=(async()=>{try{const result=await request('webLoadSection',{section});deferredSnapshots[section]=result.snapshot||{};if(bootstrapPayload){mergeDeferredSnapshots(bootstrapPayload);window.applyCloudBootstrap?.(bootstrapPayload)}return result}catch(error){window.toast(error.message||'تعذر تحميل التقرير');return null}finally{deferredSectionLoads.delete(section)}})();
+    deferredSectionLoads.set(section,task);return task;
+  }
   function installHooks(){
     window.applyRolePermissions=applyPermissions;
     window.renderUsers=renderUsers;
@@ -173,7 +204,9 @@
     window.portableCloudPost=async function(body){return request(ACTION_MAP[body.action]||body.action,Object.fromEntries(Object.entries(body).filter(([key])=>key!=='action')))};
     originalPortableCall=window.portableCall;
     window.portableCall=function(name,arg){
+      if(name==='pageChanged')activePage=String(arg||'home');
       if(name==='pageChanged'&&arg==='users'&&session?.user?.role==='owner')loadUsers();
+      if(name==='pageChanged'&&(arg==='salesComparison'||arg==='reservations'))void loadDeferredSection(arg);
       if(name==='pageChanged'&&arg==='regions')renderRegions();
       if(name==='pageChanged'&&arg==='ownerRegions'&&canView('ownerRegions'))renderOwnerRegions();
       if(name==='pageChanged'&&arg==='ownerBranches'&&canView('ownerBranches'))renderOwnerBranches();
@@ -205,9 +238,15 @@
       throw new Error('الإجراء غير مدعوم من نسخة الويب.');
     }catch(err){window.toast(err.message)}
   }
+  function renderActiveAreaReport(){
+    const page=activePage;
+    if(page==='regions')renderRegions();
+    else if(page==='ownerRegions'&&canView('ownerRegions'))renderOwnerRegions();
+    else if(page==='ownerBranches'&&canView('ownerBranches'))renderOwnerBranches();
+  }
   async function loadBootstrap(silent){
     try{
-      const result=await request('webBootstrap',{});session.user=result.user;areaPayload=result.area||null;saveSession(session);window.applyCloudBootstrap(result);window.applyLocalConfig({cloudEndpoint:CONFIG.endpoint,liveIntervalMinutes:1},{name:result.user.username,email:result.user.username,role:result.user.role},diagnostics());activateSessionShell(result.user);renderRegions();renderOwnerRegions();renderOwnerBranches();if(canView('regions'))startAreaLive();else window.startPortableLive?.();if(!silent)window.toast('تم تحميل التقارير بنجاح');return result;
+      const result=await request('webBootstrap',{});bootstrapPayload=mergeDeferredSnapshots(result);session.user=result.user;areaPayload=result.area||null;saveSession(session);saveBootstrapCache(bootstrapPayload);window.applyCloudBootstrap(bootstrapPayload);window.applyLocalConfig({cloudEndpoint:CONFIG.endpoint,liveIntervalMinutes:3},{name:result.user.username,email:result.user.username,role:result.user.role},diagnostics());activateSessionShell(result.user);renderActiveAreaReport();if(canView('regions'))startAreaLive();else window.startPortableLive?.();if(!silent)window.toast('تم تحميل التقارير بنجاح');return bootstrapPayload;
     }catch(err){
       const message=err.message||'تعذر الاتصال بخدمة Wareed.';
       if(!err.diagnosticRecorded)recordDiagnostic('error',err.code||'WEB-BOOTSTRAP-FAILED',message,'فشل تحميل بيانات الداشبورد بعد التحقق من الجلسة.');
@@ -477,7 +516,7 @@
     if(areaRefreshRunning||!session?.token)return null;
     areaRefreshRunning=true;renderRegions();
     try{
-      const result=await request('webBootstrap',{}),nextArea=result.area;if(!areaPayloadIsComplete(nextArea,areaPayload))throw new Error('التحديث الجديد لم يكتمل؛ بقيت آخر أرقام صحيحة ظاهرة');session.user=result.user;areaPayload=nextArea;saveSession(session);window.applyCloudBootstrap(result);renderRegions();renderOwnerRegions();renderOwnerBranches();if(!silent)window.toast('تم تحديث بيانات المنطقة • '+areaUpdateStamp(areaPayload?.generatedAt));return result;
+      const result=await request('webBootstrap',{}),nextArea=result.area;if(!areaPayloadIsComplete(nextArea,areaPayload))throw new Error('التحديث الجديد لم يكتمل؛ بقيت آخر أرقام صحيحة ظاهرة');bootstrapPayload=mergeDeferredSnapshots(result);session.user=result.user;areaPayload=nextArea;saveSession(session);saveBootstrapCache(bootstrapPayload);window.applyCloudBootstrap(bootstrapPayload);renderActiveAreaReport();if(!silent)window.toast('تم تحديث بيانات المنطقة • '+areaUpdateStamp(areaPayload?.generatedAt));return bootstrapPayload;
     }catch(error){
       if(isSessionFailure(error)){saveSession(null);clearInterval(areaLiveTimer);showGate(error.message||'انتهت الجلسة.');return null}
       if(!silent)window.toast(error.message||'تعذر تحديث بيانات المنطقة');return null;
@@ -518,7 +557,7 @@
     const message=document.getElementById('areaAdminMessage');message.textContent='جارٍ حفظ المجموعة والمستخدم…';
     const group={id:document.getElementById('areaGroupId').value,title:document.getElementById('areaMeetingTitle').value.trim(),description:document.getElementById('areaMeetingDescription').value.trim(),enabled:document.getElementById('areaEnabled').checked,branches:selectedAreaBranches()};
     const user={id:document.getElementById('areaUserId').value,username:document.getElementById('areaUsername').value.trim(),password:document.getElementById('areaPassword').value};
-    try{await request('webUpsertAreaGroup',{group,user});message.textContent='تم حفظ المجموعة وحساب مدير المنطقة.';resetAreaForm();await loadAreaGroups();const refreshed=await request('webBootstrap',{});areaPayload=refreshed.area||areaPayload;renderRegions();renderOwnerRegions();renderOwnerBranches()}catch(error){message.textContent=error.message}
+    try{await request('webUpsertAreaGroup',{group,user});message.textContent='تم حفظ المجموعة وحساب مدير المنطقة.';resetAreaForm();await loadAreaGroups();const refreshed=await request('webBootstrap',{});areaPayload=refreshed.area||areaPayload;saveBootstrapCache(refreshed);renderActiveAreaReport()}catch(error){message.textContent=error.message}
   }
   async function deleteAreaGroup(id){if(!confirm('حذف مجموعة المنطقة وتعطيل حساب مديرها؟'))return;try{await request('webDeleteAreaGroup',{groupId:id});window.toast('تم حذف المجموعة وتعطيل الحساب');await loadAreaGroups()}catch(error){window.toast(error.message)}}
   function renderAdminShell(){
@@ -564,7 +603,7 @@
   async function deleteUser(username){if(!confirm('حذف المستخدم '+username+' نهائيًا؟'))return;try{await request('webDeleteUser',{username});window.toast('تم حذف المستخدم');await loadUsers(true)}catch(err){window.toast(err.message)}}
   async function start(){
     injectGate();installHooks();session=readSession();
-    if(session?.token&&(!session.expiresAt||Date.parse(session.expiresAt)>Date.now())){activateSessionShell(session.user,'جارٍ تحديث أحدث التقارير...');void loadBootstrap(true);return}
+    if(session?.token&&(!session.expiresAt||Date.parse(session.expiresAt)>Date.now())){activateSessionShell(session.user,'جارٍ تحديث أحدث التقارير...');if(applyBootstrapCache())renderActiveAreaReport();void loadBootstrap(true);return}
     if(session?.token)saveSession(null);
     showGate('');
   }
